@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Clojure in Action: 程序结构、程序流程 · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Clojure in Action: 程序结构、程序流程</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/42/wallhaven-42oxk6.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Clojure in Action: 程序结构、程序流程
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "clojure">clojure</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.7k</span>阅读时长: <span class="post-count reading-time">12 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/07/30</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="程序结构"><a href="#程序结构" class="headerlink" title="程序结构"></a>程序结构</h1><h2 id="函数定义"><a href="#函数定义" class="headerlink" title="函数定义"></a>函数定义</h2><p><code>defn</code>宏展开为<code>def</code>和<code>fn</code>调用的组合。<code>fn</code>宏接受方括号中的一系列参数然后是程序主体，<code>fn</code>形式可以用于定义匿名函数。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> addition-function [x y]</span><br><span class="line">  (<span class="name"><span class="builtin-name">+</span></span> x y))</span><br><span class="line"></span><br><span class="line"><span class="comment">;; Expanded form:</span></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> addition-function</span><br><span class="line">  (<span class="name"><span class="builtin-name">fn</span></span> [x y]</span><br><span class="line">    (<span class="name"><span class="builtin-name">+</span></span> x y)))</span><br></pre></td></tr></table></figure>
+
+<h2 id="let-形式"><a href="#let-形式" class="headerlink" title="let 形式"></a>let 形式</h2><p><code>let</code>形式接受一个向量作为其第一个参数，该向量包含偶数个形式，然后是在 let 求值时进行求值的 0 个或者多个形式。let 形式可以在代码中将一个符号和某个值绑定，从而引入局部命名对象。let 返回的是最后一个表达式的值。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">let</span></span> [x <span class="number">1</span></span><br><span class="line">      y <span class="number">2</span></span><br><span class="line">      z (<span class="name"><span class="builtin-name">+</span></span> x y)]</span><br><span class="line">  z)</span><br><span class="line"><span class="comment">;=&gt; 3</span></span><br></pre></td></tr></table></figure>
+
+<p>以下函数可以使用 let 将其分成几个部分，使代码清晰。 </p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> average-pets []</span><br><span class="line">  (/ (<span class="name"><span class="builtin-name">apply</span></span> + (<span class="name"><span class="builtin-name">map</span></span> <span class="symbol">:number-pets</span> (<span class="name"><span class="builtin-name">vals</span></span> users))) (<span class="name"><span class="builtin-name">count</span></span> users)))</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> average-pets []</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [user-data (<span class="name"><span class="builtin-name">vals</span></span> users)</span><br><span class="line">        pet-counts (<span class="name"><span class="builtin-name">map</span></span> <span class="symbol">:number-pets</span> user-data)</span><br><span class="line">        total (<span class="name"><span class="builtin-name">apply</span></span> + pet-counts)]</span><br><span class="line">    (/ total (<span class="name"><span class="builtin-name">count</span></span> users))))</span><br></pre></td></tr></table></figure>
+
+<p>在 let 中如果不需要关注值，可以使用下划线标识符，下划线标识符本身没有什么特别之处，只是 clojure 的一个惯例。在解构中，下划线标识符更加实用：<code>(let [[_ _ z] [1 2 3]] z)</code>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> average-pets []</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [user-data (<span class="name"><span class="builtin-name">vals</span></span> users)</span><br><span class="line">        pet-counts (<span class="name"><span class="builtin-name">map</span></span> <span class="symbol">:number-pets</span> user-data)</span><br><span class="line">        _ (<span class="name">println</span> <span class="string">"total  pets:"</span> pet-counts)</span><br><span class="line">        total (<span class="name"><span class="builtin-name">apply</span></span> + pet-counts)]</span><br><span class="line">    (/ total (<span class="name"><span class="builtin-name">count</span></span> users))))</span><br></pre></td></tr></table></figure>
+
+<h1 id="do"><a href="#do" class="headerlink" title="do"></a>do</h1><p>纯函数语言中，程序是没有副作用的，函数的唯一行为就是计算一个值并返回。但是现实世界中必然充满了状态，也必然有副作用，例如向控制台或者日志文件中打印某些内容、在数据库中保存内容就是改变世界状态的副作用。为了将多个表达式转为一个形式，clojure 提供了 <code>do</code>形式。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">if</span></span> (<span class="name">is-something-true?</span>)</span><br><span class="line">  (<span class="name"><span class="builtin-name">do</span></span></span><br><span class="line">    (<span class="name">log-message</span> <span class="string">"in true branch"</span>)</span><br><span class="line">    (<span class="name">store-something-in-db</span>)</span><br><span class="line">    (<span class="name">return-useful-value</span>)))</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [i (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> <span class="number">3</span>)] (<span class="name"><span class="builtin-name">do</span></span> (<span class="name">println</span> i) i))</span><br></pre></td></tr></table></figure>
+
+<h1 id="程序流程"><a href="#程序流程" class="headerlink" title="程序流程"></a>程序流程</h1><h2 id="条件"><a href="#条件" class="headerlink" title="条件"></a>条件</h2><h3 id="if"><a href="#if" class="headerlink" title="if"></a>if</h3><p><code>(if test consequent alternative)</code></p>
+<p><code>if</code>形式接受一个测试表达式，若为真则求后续表达式(consequent)，若为假则则使用替代形式(alternative)。形式可以结合<code>do</code>形式使其完成多项工作。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">&gt;</span></span> <span class="number">5</span> <span class="number">2</span>)  <span class="string">"yes"</span>  <span class="string">"no"</span>)</span><br><span class="line"><span class="comment">;=&gt; "yes"</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="if-not"><a href="#if-not" class="headerlink" title="if-not"></a>if-not</h3><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">if-not</span></span> (<span class="name"><span class="builtin-name">&gt;</span></span> <span class="number">5</span> <span class="number">2</span>) <span class="string">"yes"</span> <span class="string">"no"</span>)</span><br><span class="line"><span class="comment">;=&gt; "no"</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="cond"><a href="#cond" class="headerlink" title="cond"></a>cond</h3><p><code>cond</code>可以将嵌套的<code>if</code>条件数扁平化，<code>(cond &amp; clauses)</code>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> x <span class="number">1</span>)</span><br><span class="line">(<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">  (<span class="name"><span class="builtin-name">&gt;</span></span> x <span class="number">0</span>) <span class="string">"greater!"</span></span><br><span class="line">  (<span class="name"><span class="builtin-name">=</span></span> x <span class="number">0</span>) <span class="string">"zero!"</span></span><br><span class="line">  <span class="symbol">:default</span> <span class="string">"lesser!"</span>)</span><br><span class="line"><span class="comment">;=&gt; "greater!"</span></span><br></pre></td></tr></table></figure>
+
+<p>子句（clauses）是成对的表达式。当一个表达式返回 true，求值相关的后续表达式并返回。 如果所有表达式都没有返回真值，则可以传入取真值的表达式（比如关键词 :default），然后求值相关的后续表达式并返回。</p>
+<h3 id="when"><a href="#when" class="headerlink" title="when"></a>when</h3><p><code>when</code>宏是将一个<code>if</code>和一个隐式的<code>do</code>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">when</span></span> (<span class="name"><span class="builtin-name">&gt;</span></span> <span class="number">5</span> <span class="number">2</span>)</span><br><span class="line">  (<span class="name">println</span> <span class="string">"five"</span>)</span><br><span class="line">  (<span class="name">println</span> <span class="string">"is"</span>)</span><br><span class="line">  (<span class="name">println</span> <span class="string">"greater"</span>)</span><br><span class="line">  <span class="string">"done"</span>)</span><br><span class="line"><span class="comment">;five</span></span><br><span class="line"><span class="comment">;is</span></span><br><span class="line"><span class="comment">;greater</span></span><br><span class="line"><span class="comment">;=&gt; "done"</span></span><br></pre></td></tr></table></figure>
+
+<p>此处就没有必要将<code>do</code>包装这三个函数了，<code>when</code>宏会负责这项工作。</p>
+<h3 id="when-not"><a href="#when-not" class="headerlink" title="when-not"></a>when-not</h3><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">when-not</span></span> (<span class="name"><span class="builtin-name">&lt;</span></span> <span class="number">5</span> <span class="number">2</span>)</span><br><span class="line">  (<span class="name">println</span> <span class="string">"two"</span>)</span><br><span class="line">  (<span class="name">println</span> <span class="string">"is"</span>)</span><br><span class="line">  (<span class="name">println</span> <span class="string">"smaller"</span>)</span><br><span class="line">  <span class="string">"done"</span>)</span><br><span class="line"><span class="comment">;two</span></span><br><span class="line"><span class="comment">;is</span></span><br><span class="line"><span class="comment">;smaller</span></span><br><span class="line"><span class="comment">;=&gt; "done"</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="逻辑函数"><a href="#逻辑函数" class="headerlink" title="逻辑函数"></a>逻辑函数</h2><h3 id="and"><a href="#and" class="headerlink" title="and"></a>and</h3><p>接受 0 个或多个形式，按顺序求值每个形式，如果任何一个返回 nil 或者 false，则返回该值。如果所有形式都不返回 false 或 nil，则 and 返回最后一个形式的值。如果没有任何值，则返回 true。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">and</span></span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line">(<span class="name"><span class="builtin-name">and</span></span> <span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>)</span><br><span class="line"><span class="comment">;=&gt; :c</span></span><br><span class="line">(<span class="name"><span class="builtin-name">and</span></span> <span class="symbol">:a</span> <span class="literal">nil</span> <span class="symbol">:c</span>)</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">and</span></span> <span class="symbol">:a</span> <span class="literal">false</span> <span class="symbol">:c</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line">(<span class="name"><span class="builtin-name">and</span></span> <span class="number">0</span> <span class="string">""</span>)</span><br><span class="line"><span class="comment">;=&gt; ""</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="or"><a href="#or" class="headerlink" title="or"></a>or</h3><p>接受 0 个或多个形式并逐一求值，如果任何形式返回逻辑真值，则将该值返回。如果所有形式都不返回逻辑真值，则返回最后一个值。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">or</span></span>)</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">or</span></span> <span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>)</span><br><span class="line"><span class="comment">;=&gt; :a</span></span><br><span class="line">(<span class="name"><span class="builtin-name">or</span></span> <span class="symbol">:a</span> <span class="literal">nil</span> <span class="symbol">:c</span>)</span><br><span class="line"><span class="comment">;=&gt; :a</span></span><br><span class="line">(<span class="name"><span class="builtin-name">or</span></span> <span class="literal">nil</span> <span class="literal">false</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line">(<span class="name"><span class="builtin-name">or</span></span> <span class="literal">false</span> <span class="literal">nil</span>)</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="not"><a href="#not" class="headerlink" title="not"></a>not</h3><p>该函数始终返回<code>true</code>或者<code>false</code>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">not</span></span> <span class="literal">true</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line">(<span class="name"><span class="builtin-name">not</span></span> <span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line">(<span class="name"><span class="builtin-name">not</span></span> <span class="literal">nil</span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="比较函数"><a href="#比较函数" class="headerlink" title="比较函数"></a>比较函数</h3><p><code>&lt;</code>、<code>&lt;=</code>、<code>&gt;</code>、<code>&gt;=</code>、<code>=</code>有一个额外特性：可以取任意数量的参数。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">; &lt; 可检测是否以升序排列</span></span><br><span class="line">(<span class="name"><span class="builtin-name">&lt;</span></span> <span class="number">2</span> <span class="number">4</span> <span class="number">6</span> <span class="number">8</span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line">(<span class="name"><span class="builtin-name">&lt;</span></span> <span class="number">2</span> <span class="number">4</span> <span class="number">3</span> <span class="number">8</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="与"><a href="#与" class="headerlink" title="= 与 =="></a>= 与 ==</h3><p><code>=</code>函数等同于 Java 的 <code>equals</code>，但适用于范围更广的对象，包括 nil、数值、序列。Clojure 中的 <code>==</code>函数只能用于比较数值。<code>=</code>可以比较任意两个值，但比较三种不同类型的数值时结果不理想。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">=</span></span> <span class="number">1</span> <span class="number">1</span>N <span class="number">1</span>/<span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line">(<span class="name"><span class="builtin-name">=</span></span> <span class="number">0.5</span> <span class="number">1</span>/<span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line">(<span class="name"><span class="builtin-name">=</span></span> <span class="number">0.5</span>M <span class="number">0.5</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line">(<span class="name"><span class="builtin-name">=</span></span> <span class="number">0.5</span>M <span class="number">1</span>/<span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br></pre></td></tr></table></figure>
+
+<p>如果对比不同类型的数值，则可以用<code>==</code>代替，但是所有参数必须是数值。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">==</span></span> <span class="number">1</span> <span class="number">1</span>N <span class="number">1</span>/<span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line">(<span class="name"><span class="builtin-name">==</span></span> <span class="number">1</span>/<span class="number">2</span> <span class="number">0.5</span>M <span class="number">0.5</span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line"><span class="number">1.9999999999999999</span></span><br><span class="line"><span class="comment">;=&gt; 2.0</span></span><br><span class="line">(<span class="name"><span class="builtin-name">==</span></span> <span class="number">2.0</span>M <span class="number">1.9999999999999999</span>) <span class="comment">; == 不是对抗浮点精度和舍入问题的银弹</span></span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line"></span><br><span class="line">_(== :a 1)</span><br><span class="line"><span class="comment">;ClassCastException clojure.lang.Keyword cannot be cast to java.lang.Number  clojure.lang.Numbers.equiv (Numbers.java:206)</span></span><br><span class="line">_(== nil 1)</span><br><span class="line"><span class="comment">;NullPointerException clojure.lang.Numbers.ops (Numbers.java:961)</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>如果你预计所有要对比的数据都是数值，且预期有不同类型的数字，则使用<code>==</code>，否则使用<code>=</code>。</strong></p>
+<h2 id="函数式循环"><a href="#函数式循环" class="headerlink" title="函数式循环"></a>函数式循环</h2><p>大部分函数式语言都不支持传统的<code>for</code>循环结构，因为<code>for</code>的典型实现需要改变循环计数器的值。作为替代，它们使用递归和函数应用。</p>
+<h3 id="while"><a href="#while" class="headerlink" title="while"></a>while</h3><p><code>while</code>宏与命令式语言类似。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">while</span></span> (<span class="name">request-on-queue?</span>)</span><br><span class="line">  (<span class="name">handle-request</span> (<span class="name">pop-request-queue</span>)))</span><br></pre></td></tr></table></figure>
+
+<h3 id="loop-recur"><a href="#loop-recur" class="headerlink" title="loop/recur"></a>loop/recur</h3><p>Clojure 没有传统的<code>for</code>循环，其循环流程控制是使用<code>loop</code>和<code>recur</code>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> fact-loop [n]</span><br><span class="line">  (<span class="name"><span class="builtin-name">loop</span></span> [current n fact <span class="number">1</span>]</span><br><span class="line">    (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">=</span></span> current <span class="number">1</span>)</span><br><span class="line">      fact</span><br><span class="line">      (<span class="name"><span class="builtin-name">recur</span></span> (<span class="name"><span class="builtin-name">dec</span></span> current) (<span class="name"><span class="builtin-name">*</span></span> fact current) ))))</span><br></pre></td></tr></table></figure>
+
+<p><code>loop</code>建立和<code>let</code>形式完全相同的绑定，<code>recur</code>也有两个绑定值<code>(def current)</code>和<code>(* fact current)</code>，他们在计算之后重新与<code>current</code>和<code>fact</code>绑定。</p>
+<p><code>recur</code>看起来像递归，实际上不适用栈。<code>recur</code>仅能作用于代码尾部，如果企图从任何其他位置使用它，编译器会报错。</p>
+<h3 id="doseq-和-dotimes"><a href="#doseq-和-dotimes" class="headerlink" title="doseq 和 dotimes"></a>doseq 和 dotimes</h3><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> run-report [user]</span><br><span class="line">  (<span class="name">println</span> <span class="string">"Running report for"</span> user))</span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> dispatch-reporting-jobs [all-users]</span><br><span class="line">  (<span class="name"><span class="builtin-name">doseq</span></span> [user all-users]</span><br><span class="line">    (<span class="name">run-report</span> user)))</span><br></pre></td></tr></table></figure>
+
+<p>上面这个例子中<code>doseq</code>的第一个项是一个新符号，以后将绑定到第二个项（必须是一个序列）中的每一个元素。形式的主体将对序列中的每个元素执行，然后整个形式将返回 nil。</p>
+<p><code>dotimes</code>与之类似，接受一个向量（包含一个符号和一个数值），向量中符号被设置为 0 到 (n-1) 的值，并对每个数值求取主体的值。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">dotimes</span></span> [x <span class="number">5</span>]</span><br><span class="line">  (<span class="name">println</span> <span class="string">"X is"</span> x))</span><br></pre></td></tr></table></figure>
+
+<p>将打印数字 0~4，返回 nil。</p>
+<h3 id="map-、filter、remove、reduce、for"><a href="#map-、filter、remove、reduce、for" class="headerlink" title="map 、filter、remove、reduce、for"></a>map 、filter、remove、reduce、for</h3><p>在前篇文章中的数据结构 — 序列中的“序列转换”一节中已提及。这里做一些补充。</p>
+<ul>
+<li>map</li>
+</ul>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">map</span></span> inc [<span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>])</span><br><span class="line"><span class="comment">;=&gt; (1 2 3 4)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;; map 接受一个函数，其可以有任意多个参数以及相同数量的序列。每个序列为函数提供一个参数。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">map</span></span> + [<span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>] [<span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>])</span><br><span class="line"><span class="comment">;=&gt; (0 2 4 6)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;; 返回值的长度等于最短序列的长度</span></span><br><span class="line">(<span class="name"><span class="builtin-name">map</span></span> + [<span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>] [<span class="number">0</span> <span class="number">1</span> <span class="number">2</span>])</span><br><span class="line"><span class="comment">;=&gt; (0 2 4)</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>filter</li>
+</ul>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> non-zero-expenses [expenses]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [non-zero? (<span class="name"><span class="builtin-name">fn</span></span> [e] (<span class="name"><span class="builtin-name">not</span></span> (<span class="name"><span class="builtin-name">zero?</span></span> e)))]</span><br><span class="line">    (<span class="name"><span class="builtin-name">filter</span></span> non-zero? expenses)))</span><br><span class="line">(<span class="name">non-zero-expenses</span> [<span class="number">-2</span> <span class="number">-1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>])</span><br><span class="line"><span class="comment">;=&gt; (-2 -1 1 2 3)</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>remove </p>
+<p><code>filter</code>判定保留哪些元素，<code>remove</code>判定抛弃哪些元素。两者刚好相反。</p>
+</li>
+</ul>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> non-zero-expenses [expenses]</span><br><span class="line">  (<span class="name"><span class="builtin-name">remove</span></span> zero? expenses))</span><br><span class="line">(<span class="name">non-zero-expenses</span> [<span class="number">-2</span> <span class="number">-1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>])</span><br><span class="line"><span class="comment">;=&gt; (-2 -1 1 2 3)</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>reduce &amp; reductions</li>
+</ul>
+<p><code>reduce</code>接受一个函数（有两个参数）和一个数据元素序列。函数参数应用到序列的前两个元素，产生第一个结果，之后使用这个结果和序列的下一个元素再次调用同一个函数。重复此过程直到处理完最后一个元素。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> factorial [n]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [numbers (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> (<span class="name"><span class="builtin-name">+</span></span> n <span class="number">1</span>))]</span><br><span class="line">    (<span class="name"><span class="builtin-name">reduce</span></span> * numbers)))</span><br><span class="line">(<span class="name">factorial</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; 120</span></span><br></pre></td></tr></table></figure>
+
+<p><code>reduce</code>只返回最终的规约值，而<code>reductions</code>返回每个中间值组成的序列。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> factorial-steps [n]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [numbers (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> (<span class="name"><span class="builtin-name">+</span></span> n <span class="number">1</span>))]</span><br><span class="line">    (<span class="name">reductions</span> * numbers)))</span><br><span class="line">(<span class="name">factorial-steps</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; (1 2 6 24 120)</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>for</li>
+</ul>
+<p>可以使用的限定词：<code>:let</code>，<code>:when</code>，<code>:while</code></p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [x [<span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>]</span><br><span class="line">      <span class="symbol">:let</span> [y (<span class="name"><span class="builtin-name">*</span></span> x <span class="number">3</span>)]</span><br><span class="line">      <span class="symbol">:when</span> (<span class="name"><span class="builtin-name">even?</span></span> y)]</span><br><span class="line">  y)</span><br><span class="line"><span class="comment">;=&gt; (0 6 12)</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> chessboard-labels</span><br><span class="line">  (<span class="name"><span class="builtin-name">for</span></span> [alpha <span class="string">"abcdefgh"</span></span><br><span class="line">        num (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> <span class="number">9</span>)]</span><br><span class="line">    (<span class="name"><span class="builtin-name">str</span></span> alpha num)))</span><br><span class="line">chessboard-labels</span><br><span class="line"><span class="comment">;=&gt; ("a1" "a2" "a3" "a4" "a5"  …  "h6" "h7" "h8")</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> prime? [x]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [divisors (<span class="name"><span class="builtin-name">range</span></span> <span class="number">2</span> (<span class="name"><span class="builtin-name">inc</span></span> (<span class="name"><span class="builtin-name">int</span></span> (<span class="name">Math/sqrt</span> x))))</span><br><span class="line">        remainders (<span class="name"><span class="builtin-name">map</span></span> (<span class="name"><span class="builtin-name">fn</span></span> [d] (<span class="name"><span class="builtin-name">rem</span></span> x d)) divisors)]</span><br><span class="line">    (<span class="name"><span class="builtin-name">not</span></span> (<span class="name">some</span> zero? remainders))))</span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> primes-less-than [n]</span><br><span class="line">  (<span class="name"><span class="builtin-name">for</span></span> [x (<span class="name"><span class="builtin-name">range</span></span> <span class="number">2</span> (<span class="name"><span class="builtin-name">inc</span></span> n))</span><br><span class="line">        <span class="symbol">:when</span> (<span class="name">prime?</span> x)]</span><br><span class="line">    x))</span><br><span class="line">(<span class="name">primes-less-than</span> <span class="number">50</span>)</span><br><span class="line"><span class="comment">;=&gt; (2 3 5 7 11 13 17 19 23 29 31 37 41 43 47)</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> pairs-for-primes [n]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [z (<span class="name"><span class="builtin-name">range</span></span> <span class="number">2</span> (<span class="name"><span class="builtin-name">inc</span></span> n))]</span><br><span class="line">    (<span class="name"><span class="builtin-name">for</span></span> [x z y z <span class="symbol">:when</span> (<span class="name">prime?</span> (<span class="name"><span class="builtin-name">+</span></span> x y))]</span><br><span class="line">      (<span class="name"><span class="builtin-name">list</span></span> x y))))</span><br><span class="line">(<span class="name">pairs-for-primes</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; ((2 3) (2 5) (3 2) (3 4) (4 3) (5 2))</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="串行宏"><a href="#串行宏" class="headerlink" title="串行宏"></a>串行宏</h2><h3 id="thread-first"><a href="#thread-first" class="headerlink" title="thread-first"></a>thread-first</h3><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> final-amount [principle rate time-periods]</span><br><span class="line">  (<span class="name"><span class="builtin-name">*</span></span> (<span class="name">Math/pow</span> (<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span> (/ rate <span class="number">100</span>)) time-periods) principle))</span><br></pre></td></tr></table></figure>
+
+<p>以上函数定义不易理解，需要从里往外读。使用<code>thread-first</code>宏<code>-&gt;</code>改写如下。该宏所做的是取第一个参数，将其放在下一个表达式的第二个位置。之所以成为<code>thread-first</code>，是因为它将代码移到下一个形式首个参数的位置。之后，它取得整个结果表达式，并将其移到再下一个表达式的第二个位置。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> final-amount-&gt; [principle rate time-periods]</span><br><span class="line">  (<span class="name"><span class="builtin-name">-&gt;</span></span> rate</span><br><span class="line">      (/ <span class="number">100</span>)</span><br><span class="line">      (<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span>)</span><br><span class="line">      (<span class="name">Math/pow</span> time-periods)</span><br><span class="line">      (<span class="name"><span class="builtin-name">*</span></span> principle)))</span><br></pre></td></tr></table></figure>
+
+<h3 id="thread-last"><a href="#thread-last" class="headerlink" title="thread-last"></a>thread-last</h3><p><code>thread-last</code>宏<code>-&gt;&gt;</code>在取得第一个表达式结果后，将其移入下一个表达式最后的位置。之后，对所有表达式重复该 过程。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> factorial [n]</span><br><span class="line">  (<span class="name"><span class="builtin-name">reduce</span></span> * (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> (<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span> n))))</span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> factorial-&gt;&gt; [n]</span><br><span class="line">  (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> n</span><br><span class="line">       (<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span>)</span><br><span class="line">       (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span>)</span><br><span class="line">       (<span class="name"><span class="builtin-name">reduce</span></span> *)))</span><br></pre></td></tr></table></figure>
+
+<p><code>thread-last</code>宏更常见的用途是处理数据元素序列以及使用 map、reduce、filter 这样的高阶函数。这些函数都接受序列作为最后一个元素，所以<code>thread-last</code>宏更为合适。</p>
+<p><code>some-&gt;</code>和<code>some-&gt;&gt;</code>和上述两个宏基本相同，但是如果表达式的任意一步的结果是 nil，则计算结束。</p>
+<h3 id="thread-as"><a href="#thread-as" class="headerlink" title="thread-as"></a>thread-as</h3><p><code>thread-as</code>宏<code>as-&gt;</code>相比上两者，更加灵活：你为它提供一个名称，它将把各个连续形式的结果绑定到这个名称，以便下一步使用。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">as-&gt;</span> &#123;<span class="string">"a"</span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span>]&#125; &lt;&gt;</span><br><span class="line">      (<span class="name">&lt;&gt;</span> <span class="string">"a"</span>)</span><br><span class="line">      (<span class="name"><span class="builtin-name">conj</span></span> &lt;&gt; <span class="number">10</span>) </span><br><span class="line">      (<span class="name"><span class="builtin-name">map</span></span> inc &lt;&gt;))</span><br></pre></td></tr></table></figure>
+
+<p>该例子展开后如下：</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">let</span></span> [&lt;&gt; &#123;<span class="string">"a"</span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span>]&#125;</span><br><span class="line">      &lt;&gt; (<span class="name">&lt;&gt;</span> <span class="string">"a"</span>)</span><br><span class="line">      &lt;&gt; (<span class="name"><span class="builtin-name">conj</span></span> &lt;&gt; <span class="number">10</span>)</span><br><span class="line">      &lt;&gt; (<span class="name"><span class="builtin-name">map</span></span> inc &lt;&gt;)]</span><br><span class="line">  &lt;&gt;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="条件式串行宏"><a href="#条件式串行宏" class="headerlink" title="条件式串行宏"></a>条件式串行宏</h3><p><code>cond-&gt;</code>和<code>cond-&gt;&gt;</code>除了每个形式都包含一个条件之外，和<code>-&gt;</code>以及<code>-&gt;&gt;</code>基本相同，如果一个条件为false，则对应的形式将会跳过，但是对下一对形式继续串行求值（<code>cond</code>则是在发现为真的判定后将立刻停止后续成对形式的求值，而<code>cond-&gt;</code>会对每个条件求值）。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">let</span></span> [x <span class="number">1</span> y <span class="number">2</span>]</span><br><span class="line">  (<span class="name">cond-&gt;</span> []</span><br><span class="line">          (<span class="name"><span class="builtin-name">odd?</span></span> x)          (<span class="name"><span class="builtin-name">conj</span></span> <span class="string">"x is odd"</span>)</span><br><span class="line">          (<span class="name"><span class="builtin-name">zero?</span></span> (<span class="name"><span class="builtin-name">rem</span></span> y <span class="number">3</span>)) (<span class="name"><span class="builtin-name">conj</span></span> <span class="string">"y is divisible by 3"</span>)</span><br><span class="line">          (<span class="name"><span class="builtin-name">even?</span></span> y)         (<span class="name"><span class="builtin-name">conj</span></span> <span class="string">"y is even"</span>)))</span><br><span class="line"><span class="comment">;=&gt; ["x is odd" "y is even"]</span></span><br></pre></td></tr></table></figure>
+
+<p>其等价描述为：</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">let</span></span> [x <span class="number">1</span> y <span class="number">2</span>]</span><br><span class="line">  (<span class="name">as-&gt;</span> [] &lt;&gt;</span><br><span class="line">        (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">odd?</span></span> x)          (<span class="name"><span class="builtin-name">conj</span></span> &lt;&gt; <span class="string">"x is odd"</span>)            &lt;&gt;)</span><br><span class="line">        (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">zero?</span></span> (<span class="name"><span class="builtin-name">rem</span></span> y <span class="number">3</span>)) (<span class="name"><span class="builtin-name">conj</span></span> &lt;&gt; <span class="string">"y is divisible by 3"</span>) &lt;&gt;)</span><br><span class="line">        (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">even?</span></span> y)         (<span class="name"><span class="builtin-name">conj</span></span> &lt;&gt; <span class="string">"y is even"</span>)           &lt;&gt;)))</span><br><span class="line"><span class="comment">;=&gt; ["x is odd" "y is even"]</span></span><br></pre></td></tr></table></figure>
+
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/07/30/Java进程CPU高负载排查/" title= "Java进程CPU高负载排查">
+                    <div class="prevTitle">Java进程CPU高负载排查</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#程序结构"><span class="toc-number">1.</span> <span class="toc-text">程序结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#函数定义"><span class="toc-number">1.1.</span> <span class="toc-text">函数定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#let-形式"><span class="toc-number">1.2.</span> <span class="toc-text">let 形式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#do"><span class="toc-number">2.</span> <span class="toc-text">do</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#程序流程"><span class="toc-number">3.</span> <span class="toc-text">程序流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#条件"><span class="toc-number">3.1.</span> <span class="toc-text">条件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#if"><span class="toc-number">3.1.1.</span> <span class="toc-text">if</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#if-not"><span class="toc-number">3.1.2.</span> <span class="toc-text">if-not</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cond"><span class="toc-number">3.1.3.</span> <span class="toc-text">cond</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#when"><span class="toc-number">3.1.4.</span> <span class="toc-text">when</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#when-not"><span class="toc-number">3.1.5.</span> <span class="toc-text">when-not</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#逻辑函数"><span class="toc-number">3.2.</span> <span class="toc-text">逻辑函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#and"><span class="toc-number">3.2.1.</span> <span class="toc-text">and</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#or"><span class="toc-number">3.2.2.</span> <span class="toc-text">or</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#not"><span class="toc-number">3.2.3.</span> <span class="toc-text">not</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#比较函数"><span class="toc-number">3.2.4.</span> <span class="toc-text">比较函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#与"><span class="toc-number">3.2.5.</span> <span class="toc-text">= 与 ==</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#函数式循环"><span class="toc-number">3.3.</span> <span class="toc-text">函数式循环</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#while"><span class="toc-number">3.3.1.</span> <span class="toc-text">while</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#loop-recur"><span class="toc-number">3.3.2.</span> <span class="toc-text">loop/recur</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#doseq-和-dotimes"><span class="toc-number">3.3.3.</span> <span class="toc-text">doseq 和 dotimes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#map-、filter、remove、reduce、for"><span class="toc-number">3.3.4.</span> <span class="toc-text">map 、filter、remove、reduce、for</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#串行宏"><span class="toc-number">3.4.</span> <span class="toc-text">串行宏</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#thread-first"><span class="toc-number">3.4.1.</span> <span class="toc-text">thread-first</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#thread-last"><span class="toc-number">3.4.2.</span> <span class="toc-text">thread-last</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#thread-as"><span class="toc-number">3.4.3.</span> <span class="toc-text">thread-as</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#条件式串行宏"><span class="toc-number">3.4.4.</span> <span class="toc-text">条件式串行宏</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 10
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

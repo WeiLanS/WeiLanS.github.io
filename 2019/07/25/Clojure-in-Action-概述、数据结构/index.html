@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Clojure in Action: 概述、数据结构 · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Clojure in Action: 概述、数据结构</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/42/wallhaven-42oxk6.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Clojure in Action: 概述、数据结构
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "clojure">clojure</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">7.1k</span>阅读时长: <span class="post-count reading-time">31 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/07/25</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="Clojure-概述"><a href="#Clojure-概述" class="headerlink" title="Clojure 概述"></a>Clojure 概述</h1><blockquote>
+<p>关键词：<code>JVM</code>、<code>Lisp</code>、<code>动态类型</code>、<code>函数式语言</code>、<code>不可变数据结构</code>、<code>Code as data</code></p>
+</blockquote>
+<h2 id="1-Clojure-是-Lisp-的一个变种"><a href="#1-Clojure-是-Lisp-的一个变种" class="headerlink" title="1.  Clojure 是 Lisp 的一个变种"></a>1.  Clojure 是 Lisp 的一个变种</h2><p>Clojure 对所有函数甚至类似运算符的一切都使用前缀表示法。</p>
+<h2 id="2-Clojure-以JVM为宿主"><a href="#2-Clojure-以JVM为宿主" class="headerlink" title="2. Clojure 以JVM为宿主"></a>2. Clojure 以JVM为宿主</h2><p>Clojure 代码直接编译为字节码供JVM运行；</p>
+<p>Clojure 默认加载 java.lang包下的所有类；</p>
+<p>Clojure 直接使用 Java 类型和标准程序库，如 Clojure 的集合实现接口与 Java 集合接口相同，重用 Java 类型和接口可以使 Java 代码无缝使用 Clojure 类型；</p>
+<p>使用点运算符作为与Java 互操作的基础：<code>(. Math abs -3)</code>、<code>(. &quot;foo&quot; toUpperCase)</code>，静态成员可以重写为<code>(Math/abs -3)</code>，实例方法调用也可以使用<code>(.toUpperCase &quot;foo&quot;)</code>，创建类的实例可以使用<code>(new Integer &quot;42&quot;)</code>或<code>(Integer. &quot;42&quot;)</code>；</p>
+<p>Clojure 的不可变数据结构使共享可变状态的问题变得毫无意义。即使需要变更状态，Clojure 也提供了<code>var</code>（变量）、<code>atom</code>（原子）、<code>ref</code>（引用）、<code>agent</code>（代理）的并发数据结构。</p>
+<h2 id="3-Clojure-是一种函数式编程语言"><a href="#3-Clojure-是一种函数式编程语言" class="headerlink" title="3. Clojure 是一种函数式编程语言"></a>3. Clojure 是一种函数式编程语言</h2><p>函数是第一等公民，函数可以作为参数传递给其他参数，也可以作为输出值返回。FP设计的函数式纯粹的，具备<em>引用透明性</em>，只要函数输入相同就始终返回相同输出；</p>
+<p>FP一般默认不可变数据结构，将不可变结构作为语言的默认状态保证了函数不会修改传递给他们的参数。Clojure的不可变数据结构避免了高代价复制。当对一个不可变数据结构进行更改，结果则为一个全新的结构。Clojrue隐式使用<em>结构化共享</em>和其他技术，确保执行复制的次数最少、不可变数据结构的操作便捷且节约内存。比如在一颗树上添加新值，会在通往根节点的路径上创建一组新的节点和引用；</p>
+<p>Clojure鼓励使用纯函数式编程：不可变数据结构、高阶函数和代替强制循环的递归，甚至可以选择集合的惰性求值和及早求值。当然，为了适应不同场景，Clojure也提供了对共享状态变更的方法。</p>
+<h1 id="Clojure-基础"><a href="#Clojure-基础" class="headerlink" title="Clojure 基础"></a>Clojure 基础</h1><h2 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h2><h3 id="1-Clojure-REPL（读取-求值-打印循环）"><a href="#1-Clojure-REPL（读取-求值-打印循环）" class="headerlink" title="1. Clojure REPL（读取 - 求值 - 打印循环）"></a>1. <code>Clojure REPL</code>（读取 - 求值 - 打印循环）</h3><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span> <span class="number">2</span>)                                                   </span><br><span class="line"><span class="comment">;=&gt; 3</span></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> my-addition (<span class="name"><span class="builtin-name">fn</span></span> [operand1 operand2] (<span class="name"><span class="builtin-name">+</span></span> operand1 operand2)))</span><br><span class="line"><span class="comment">;=&gt; #'user/my-addition</span></span><br><span class="line">(<span class="name">my-addition</span> <span class="number">1</span> <span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; 3</span></span><br><span class="line">(<span class="name">my-addition</span> <span class="number">100</span> <span class="number">30</span>)</span><br><span class="line"><span class="comment">;=&gt; 130</span></span><br><span class="line">(<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span> <span class="number">2</span>) <span class="string">"Two forms on one line!"</span></span><br><span class="line"><span class="comment">;=&gt; 3</span></span><br><span class="line"><span class="comment">;=&gt; "Two forms on one line!"</span></span><br></pre></td></tr></table></figure>
+
+<p>第二个表达式定义了一个命名空间限定的全局符号<code>user/my-addition</code> 。前缀<code>#&#39;</code>表明这是一个 Clojure 变量，变量是一个可变容器，其中包含唯一值，本例中为加法函数。</p>
+<p>函数中没有显示的 return 语句。从函数中返回的值总是函数中最后一个求值的表达式。</p>
+<p>最后三行是按照形式运行，Clojure 持续读取，直到发现一个完整的形式，然后求值并打印，此后如果缓冲区里仍有字符，它读取另一个形式、求值并打印。</p>
+<h3 id="2-特殊-REPL-变量"><a href="#2-特殊-REPL-变量" class="headerlink" title="2. 特殊 REPL 变量"></a>2. 特殊 REPL 变量</h3><p>变量<code>*1</code>，<code>*2</code>，<code>*3</code>，<code>*e</code>保存最后一个、倒数第二个、倒数第三个成功读取的形式和最后一个错误。每当新形式求值成功，该值会保存在<code>*1</code>，旧<code>*1</code>被移动到<code>*2</code>，旧<code>*2</code>被移动到<code>*3</code>。</p>
+<h3 id="3-文档查找"><a href="#3-文档查找" class="headerlink" title="3. 文档查找"></a>3. 文档查找</h3><ul>
+<li><code>doc</code>：返回具体的函数描述，该 宏需要你了解具体的实体名称。</li>
+<li><code>find-doc</code>：接受一个字符串（可以是正则），模糊查询复合条件的函数或宏文档。该函数在不确定名称时很实用。</li>
+<li><code>apropos</code>：工作方式与<code>find-doc</code>类似，只打印匹配搜索模式的函数名称。</li>
+</ul>
+<h3 id="4-其他细节"><a href="#4-其他细节" class="headerlink" title="4.  其他细节"></a>4.  其他细节</h3><ul>
+<li><p>前缀表示法。没有任何运算符，数学运算符就是 Clojure 函数。</p>
+</li>
+<li><p>空格。Clojure 不需要逗号来区分列表元素，当实用逗号时，Clojure 会把它们当成逗号忽略。当然，特定场景如哈希映射，使用逗号有助于程序员理解。</p>
+</li>
+<li><p>注释。单行注释使用分号表示。多行注释可以使用<code>comment</code>宏，该宏会忽略传入的形式，返回 nil。此外，宏<code>#_</code>会告诉reader忽略下一个Clojure形式。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> #_ <span class="number">4</span> <span class="number">5</span>]</span><br><span class="line"><span class="comment">;=&gt; [1 2 3 5]</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Clojure 大小写敏感。</p>
+</li>
+</ul>
+<h2 id="Clojure-数据结构"><a href="#Clojure-数据结构" class="headerlink" title="Clojure 数据结构"></a>Clojure 数据结构</h2><h3 id="1-nil-真值-价值"><a href="#1-nil-真值-价值" class="headerlink" title="1. nil / 真值 / 价值"></a>1. nil / 真值 / 价值</h3><p>Clojure 的 <code>nil</code>等价于 Java 的 <code>null</code> ，在 nil 上调用一个函数可能报空指针异常。</p>
+<p>除了 false 和 nil 之外，其他值都被视为真值。</p>
+<h3 id="2-字符-字符串"><a href="#2-字符-字符串" class="headerlink" title="2. 字符 / 字符串"></a>2. 字符 / 字符串</h3><p>Clojure 字符是 Java 字符， 使用反斜杠宏表示字符: </p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">type</span></span> \a)</span><br><span class="line"><span class="comment">;=&gt; java.lang.Character</span></span><br></pre></td></tr></table></figure>
+
+<p>Clojure 字符串是 Java 字符串，使用双引号表示。（单引号则是另一个读取器宏，来表示 Symbol）</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">type</span></span> <span class="string">"hello"</span>)</span><br><span class="line"><span class="comment">;=&gt; java.lang.String</span></span><br></pre></td></tr></table></figure>
+
+<p>Java String API 在 Clojure 中依然很有用。</p>
+<h3 id="3-数值"><a href="#3-数值" class="headerlink" title="3.  数值"></a>3.  数值</h3><p>Clojure 使用的整数是64位整数（<code>Long</code>），浮点数是64位浮点数（<code>Double</code>）。当需要更大的范围时，可以使用<code>BigInteger</code>,<code>BigDecimal</code>。此外，还有一个不常见的数值类型：比例（<code>ratio</code>），比例在两个整数相除时创建。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">type</span></span> <span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; java.lang.Long</span></span><br><span class="line">(<span class="name"><span class="builtin-name">type</span></span> <span class="number">3.14</span>)</span><br><span class="line"><span class="comment">;=&gt; java.lang.Double</span></span><br><span class="line">(<span class="name"><span class="builtin-name">type</span></span> <span class="number">1</span>/<span class="number">3</span>)</span><br><span class="line"><span class="comment">;=&gt; clojure.lang.Ratio</span></span><br><span class="line">(<span class="name"><span class="builtin-name">type</span></span> <span class="literal">true</span>)</span><br><span class="line"><span class="comment">;=&gt; java.lang.Boolean</span></span><br><span class="line">(<span class="name"><span class="builtin-name">type</span></span> <span class="number">123</span>N)</span><br><span class="line"><span class="comment">;=&gt; clojure.lang.BigInt</span></span><br><span class="line">(<span class="name"><span class="builtin-name">type</span></span> <span class="number">0.5</span>M)</span><br><span class="line"><span class="comment">;=&gt; java.math.BigDecimal</span></span><br></pre></td></tr></table></figure>
+
+<p>当不同数值类型在同一个算术运算中混合使用时，具有高传染性的数值类型将其类型传染给结果<code>(long &lt; bigint &lt; ratio &lt; bigdec &lt; double)</code></p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span> <span class="number">1</span>N)</span><br><span class="line"><span class="comment">;=&gt; 2N</span></span><br><span class="line">(<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span> <span class="number">1</span>N <span class="number">1</span>/<span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; 5/2</span></span><br><span class="line">(<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span> <span class="number">1</span>N <span class="number">1</span>/<span class="number">2</span> <span class="number">0.5</span>M)</span><br><span class="line"><span class="comment">;=&gt; 3.0M</span></span><br><span class="line">(<span class="name"><span class="builtin-name">+</span></span> <span class="number">1</span> <span class="number">1</span>N <span class="number">1</span>/<span class="number">2</span> <span class="number">0.5</span>M <span class="number">0.5</span>)</span><br><span class="line"><span class="comment">;=&gt; 3.5</span></span><br></pre></td></tr></table></figure>
+
+<p>溢出（overflow）：在 Clojure 中可能产生溢出的算术运算只有整数加法、减法和乘法（整数相除时，如果超过范围则生成一个比例）。</p>
+<p>溢出发生时 Clojure 会抛出 <code>ArtithmeticException</code>异常。如果希望结果提升为大整数，则应该使用：<code>+&#39;</code>，<code>-&#39;</code>，<code>*&#39;</code>，<code>inc&#39;</code>，<code>dec&#39;</code>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">inc</span></span> <span class="number">9223372036854775807</span>)</span><br><span class="line"><span class="comment">;ArithmeticException integer overflow  clojure.lang.Numbers.throwIntOverflow (Numbers.java:1424)</span></span><br><span class="line">(<span class="name">inc'</span> <span class="number">9223372036854775807</span>)</span><br><span class="line"><span class="comment">;=&gt; 9223372036854775808N</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-符号-关键字"><a href="#4-符号-关键字" class="headerlink" title="4. 符号 / 关键字"></a>4. 符号 / 关键字</h3><p><code>符号</code>是 Clojure 中的标识符，代表值的名称。符号本身只包含可选命名空间的名称，但当一个表达式求值时，它们被所代表的值取代。</p>
+<p>在一个程序中，符号通常被解析为不是符号的其他内容，但是可以通过一个前导的单引号<code>引用符号</code>，将其当成一个值而非标识符。</p>
+<p>当为一个符号加上引号，就将这个引号当成数据而不是代码来处理，在实践中一般不会这么做，因为有另一种特殊类型：<code>关键词</code>，关键词从不引用其他值，求值的结果总是他们本身。关键词的典型用法是作为哈希映射中的键和枚举值。</p>
+<h3 id="5-列表"><a href="#5-列表" class="headerlink" title="5. 列表"></a>5. 列表</h3><blockquote>
+<p>主要函数：<code>list</code>，<code>list?</code>，<code>conj</code>，<code>peek</code>，<code>pop</code>，<code>count</code></p>
+</blockquote>
+<p>Clojure 列表是<strong>单链表</strong>。只能从列表前端添加或删除元素，这意味着多个不同列表可以共享相同尾部，使列表成为最简单的不可变数据结构。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; (1 2 3 4 5)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">list?</span></span> *1)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">conj</span></span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>) <span class="number">6</span>)</span><br><span class="line"><span class="comment">;=&gt; (6 1 2 3 4 5)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">conj</span></span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>) <span class="number">4</span> <span class="number">5</span> <span class="number">6</span>)</span><br><span class="line"><span class="comment">;=&gt; (6 5 4 1 2 3)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">conj</span></span> (<span class="name"><span class="builtin-name">conj</span></span> (<span class="name"><span class="builtin-name">conj</span></span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>) <span class="number">4</span>) <span class="number">5</span>) <span class="number">6</span>)                     </span><br><span class="line"><span class="comment">;=&gt; (6 5 4 1 2 3)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; 可以将列表当成一个栈来对待</span></span><br><span class="line">(<span class="name"><span class="builtin-name">peek</span></span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>))</span><br><span class="line"><span class="comment">;=&gt; 1</span></span><br><span class="line">(<span class="name"><span class="builtin-name">pop</span></span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>))</span><br><span class="line"><span class="comment">;=&gt; (2 3)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">peek</span></span> (<span class="name"><span class="builtin-name">list</span></span>))                                               </span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">pop</span></span> (<span class="name"><span class="builtin-name">list</span></span>))                                            </span><br><span class="line"><span class="comment">;IllegalStateException Can't pop empty list  clojure.lang.PersistentList$EmptyList.pop (PersistentList.java:183)</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">count</span></span> (<span class="name"><span class="builtin-name">list</span></span>))</span><br><span class="line"><span class="comment">;=&gt; 0</span></span><br><span class="line">(<span class="name"><span class="builtin-name">count</span></span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span>))</span><br><span class="line"><span class="comment">;=&gt; 4</span></span><br></pre></td></tr></table></figure>
+
+<p>列表的特殊性：Clojure 会假定列表中出现的第一个符号表示函数（或者宏）名称。Clojure 视图以处理所有列表的相同方式来处理表(1,2,3) ，第一个元素被视为函数，而这里的整数 1 并不是函数。若希望将其作为数据而非代码，解决方式就是加上引号：<code>&#39;(1,2,3)</code>。</p>
+<p>实践中一般不会在 Clojure 代码中使用列表作为数据，而是使用向量类型。</p>
+<h3 id="6-向量"><a href="#6-向量" class="headerlink" title="6. 向量"></a>6. 向量</h3><blockquote>
+<p>主要函数：<code>vector</code>，<code>get</code>，<code>nth</code>，<code>assoc</code>, <code>conj</code>,<code>peek</code>，<code>pop</code>，<code>count</code>，<code>subvec</code>，<code>函数本身</code></p>
+</blockquote>
+<p>向量可以使用<code>vector</code>函数创建，也可以使用方括号表示法创建，可以快速随机访问向量中的元素。获取其中元素中的方法有<code>get</code>和<code>nth</code>，差别在于没有找到相应值时，nth 会报出错误，get 返回 nil。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">vector</span></span> <span class="number">10</span> <span class="number">20</span> <span class="number">30</span> <span class="number">40</span> <span class="number">50</span>)</span><br><span class="line"><span class="comment">;=&gt; [10 20 30 40 50]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> the-vector [<span class="number">10</span> <span class="number">20</span> <span class="number">30</span> <span class="number">40</span> <span class="number">50</span>])</span><br><span class="line"><span class="comment">;=&gt; #'user/the-vector</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">get</span></span> the-vector <span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; 30</span></span><br><span class="line">(<span class="name"><span class="builtin-name">nth</span></span> the-vector <span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; 30</span></span><br><span class="line">(<span class="name"><span class="builtin-name">get</span></span> the-vector <span class="number">10</span>)</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">nth</span></span> the-vector <span class="number">10</span>)</span><br><span class="line"><span class="comment">;IndexOutOfBoundsException   clojure.lang.PersistentVector.arrayFor (PersistentVector.java:107)</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>nth</th>
+<th>Get</th>
+<th>Vector as fn</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vector is nil</td>
+<td>nil</td>
+<td>nil</td>
+<td>Throw exception</td>
+</tr>
+<tr>
+<td>Index out of range</td>
+<td>Throw exception</td>
+<td>Nil</td>
+<td>Throw exception</td>
+</tr>
+<tr>
+<td>Support ‘not found’ param</td>
+<td>yes</td>
+<td>Yes</td>
+<td>no</td>
+</tr>
+</tbody></table>
+<p>修改向量的方法中最常见的是 <code>assoc</code>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">assoc</span></span> the-vector <span class="number">2</span> <span class="number">25</span>)        <span class="comment">; 可以变更现有索引                            </span></span><br><span class="line"><span class="comment">;=&gt; [10 20 25 40 50]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">assoc</span></span> the-vector <span class="number">5</span> <span class="number">60</span>)        <span class="comment">; 可以添加到尾部                        </span></span><br><span class="line"><span class="comment">;=&gt; [10 20 30 40 50 60]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">assoc</span></span> the-vector <span class="number">6</span> <span class="number">70</span>)      <span class="comment">; 但是不能超过尾部                    </span></span><br><span class="line"><span class="comment">;IndexOutOfBoundsException   clojure.lang.PersistentVector.assocN (PersistentVector.java:137)</span></span><br></pre></td></tr></table></figure>
+
+<p><code>conj</code>函数同样适用于向量，但在向量中新元素将会被添加到最后，因为那是向量中最快速的插入位置。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">conj</span></span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>] <span class="number">6</span>)</span><br><span class="line"><span class="comment">;=&gt; [1 2 3 4 5 6]</span></span><br></pre></td></tr></table></figure>
+
+<p><code>peek</code>和<code>pop</code>也适用于向量，方法会查看向量的尾部，而不是列表的表头。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">peek</span></span> [<span class="number">1</span> <span class="number">2</span>])</span><br><span class="line"><span class="comment">;=&gt; 2</span></span><br><span class="line">(<span class="name"><span class="builtin-name">pop</span></span> [<span class="number">1</span> <span class="number">2</span>])</span><br><span class="line"><span class="comment">;=&gt; [1]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">peek</span></span> [])                                         </span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">pop</span></span> [])                                          </span><br><span class="line"><span class="comment">;IllegalStateException Can't pop empty vector  clojure.lang.PersistentVector.pop (PersistentVector.java:381)</span></span><br></pre></td></tr></table></figure>
+
+<p>向量本身也是取单一参数的函数。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">the-vector</span> <span class="number">3</span>)</span><br><span class="line"><span class="comment">;=&gt; 40</span></span><br></pre></td></tr></table></figure>
+
+<p><code>subvec</code>会返回向量的一个子向量 <code>(subvec avec start end?)</code>。若未指定end，则默认为向量的末尾。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">subvec</span></span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>] <span class="number">3</span>)</span><br><span class="line"><span class="comment">;-&gt; [4 5]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">subvec</span></span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>] <span class="number">1</span> <span class="number">3</span>)</span><br><span class="line"><span class="comment">;-&gt; [2 3]</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="7-映射"><a href="#7-映射" class="headerlink" title="7. 映射"></a>7. 映射</h3><blockquote>
+<p>主要函数：<code>hash-map</code>，<code>sorted-map</code>，<code>assoc</code>，<code>dissoc</code>，<code>select-keys</code>，<code>merge</code>， <code>merge-with</code>，<code>assoc-in</code>，<code>get-in</code>，<code>update-in</code>，<code>keys</code>，<code>vals</code>，<code>contains?</code>，<code>get</code>，<code>函数本身</code></p>
+</blockquote>
+<p>一个映射就是一个键值对序列。映射可以使用<code>hash-map</code>函数构建。依据键获取对应的值时除了使用<code>get</code>函数外，映射本身也是一个函数，Clojure本身也是一个函数。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> the-map &#123;<span class="symbol">:a</span> <span class="number">1</span> <span class="symbol">:b</span> <span class="number">2</span> <span class="symbol">:c</span> <span class="number">3</span>&#125;)</span><br><span class="line"><span class="comment">;=&gt; #'user/the-map</span></span><br><span class="line">(<span class="name"><span class="builtin-name">hash-map</span></span> <span class="symbol">:a</span> <span class="number">1</span> <span class="symbol">:b</span> <span class="number">2</span> <span class="symbol">:c</span> <span class="number">3</span>)</span><br><span class="line"><span class="comment">;=&gt; &#123;:a 1, :c 3, :b 2&#125;</span></span><br><span class="line"></span><br><span class="line">(<span class="name">the-map</span> <span class="symbol">:b</span>)</span><br><span class="line"><span class="comment">;=&gt; 2</span></span><br><span class="line">(<span class="symbol">:b</span> the-map)</span><br><span class="line"><span class="comment">;=&gt; 2</span></span><br><span class="line">(<span class="symbol">:z</span> the-map <span class="number">26</span>)          <span class="comment">; 若未找到关键字则返回一个默认值</span></span><br><span class="line"><span class="comment">;=&gt; 26</span></span><br><span class="line">(<span class="name"><span class="builtin-name">get</span></span> the-map <span class="symbol">:z</span> <span class="number">26</span>) </span><br><span class="line"><span class="comment">;=&gt; 26</span></span><br><span class="line">(<span class="name">the-map</span> <span class="symbol">:z</span> <span class="number">26</span>) </span><br><span class="line"><span class="comment">;=&gt; 26</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">sorted-map</span></span> <span class="symbol">:c</span> <span class="number">3</span> <span class="symbol">:b</span> <span class="number">2</span> <span class="symbol">:a</span> <span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; &#123;:a 1, :b 2, :c 3&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>映射字面量和 hash-map 函数不完全等价，Clojure 实际上有<code>哈希映射(hash-map)</code>以及<code>数组映射(array-map)</code>。数组映射以有序方式保存键和值，以扫描的方式进行查找。如果使用 assoc 函数将太多键关联到一个数组映射，那将会得到一个哈希映射（而哈希映射变得太小不会反悔一个数组映射）。透明地替换数据结构的实现是 Clojure 提高性能的常用技巧。</p>
+<p>此外，<code>sorted-map</code>不会按照存放的顺序返回，它会根据键来进行排序。</p>
+<p>映射的修改方法有<code>assoc</code>和<code>dissoc</code>等。<code>assoc</code> 返回新增了一个键值对的映射表， <code>dissoc</code> 返回移除了某些键的映射表。 <code>select-keys</code>返回一个映射表，仅保留了参数传入的那些键。<code>merge</code>可以合并映射表。如果多个映射表包含了同一个键，那么最右边的获胜。<code>merge-with</code>与 merge 很类似，除了当两个或以上的映射表中有相同的键时，你能指定一个你自己的函数，来决定如何合并这个键对应的值。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> updated-map (<span class="name"><span class="builtin-name">assoc</span></span> the-map <span class="symbol">:d</span> <span class="number">4</span>))</span><br><span class="line"><span class="comment">;=&gt; #'user/updated-map</span></span><br><span class="line">updated-map</span><br><span class="line"><span class="comment">;=&gt; &#123;:d 4, :a 1, :b 2, :c 3&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">dissoc</span></span> updated-map <span class="symbol">:a</span>)</span><br><span class="line"><span class="comment">;=&gt; &#123;:b 2, :c 3, :d 4&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">select-keys</span></span> updated-map [<span class="symbol">:a</span> <span class="symbol">:b</span>])</span><br><span class="line"><span class="comment">;=&gt; &#123;:a 1, :b 2&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">merge</span></span> updated-map &#123;<span class="symbol">:m</span> <span class="number">666</span>, <span class="symbol">:n</span> <span class="number">777</span>&#125;)</span><br><span class="line"><span class="comment">;=&gt; &#123;:a 1, :b 2, :c 3, :d 4, :m 666, :n 777&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">merge</span></span> &#123;<span class="symbol">:a</span> <span class="number">1</span> <span class="symbol">:b</span> <span class="number">2</span>&#125; &#123;<span class="symbol">:a</span> <span class="number">3</span> <span class="symbol">:c</span> <span class="number">4</span>&#125;)</span><br><span class="line"><span class="comment">;=&gt; &#123;:a 3, :b 2, :c 4&#125;</span></span><br><span class="line">(<span class="name">merge-with</span> + &#123;<span class="symbol">:a</span> <span class="number">1</span> <span class="symbol">:b</span> <span class="number">2</span>&#125; &#123;<span class="symbol">:a</span> <span class="number">3</span> <span class="symbol">:c</span> <span class="number">4</span>&#125;)</span><br><span class="line"><span class="comment">;=&gt; &#123;:a 4, :b 2, :c 4&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>关于嵌套映射的使用。想要更改嵌套映射中的值需要先进入想要的位置，创建一个更改后的映射，并用 assoc 将更改的信息关联到这个中间映射，并一路返回到根。Clojure提供三个简化嵌套更新的函数。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> users &#123;<span class="symbol">:kyle</span> &#123;<span class="symbol">:date-joined</span> <span class="string">"2009-01-01"</span></span><br><span class="line">                   <span class="symbol">:summary</span>     &#123;<span class="symbol">:average</span> &#123;<span class="symbol">:monthly</span> <span class="number">1000</span></span><br><span class="line">                                           <span class="symbol">:yearly</span>  <span class="number">12000</span>&#125;&#125;&#125;&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">; assoc-in 可以设置新值，若不存在任何嵌套映射，在创建并正确关联。</span></span><br><span class="line">(<span class="name">assoc-in</span> users [<span class="symbol">:kyle</span> <span class="symbol">:summary</span> <span class="symbol">:average</span> <span class="symbol">:monthly</span>] <span class="number">3000</span>)</span><br><span class="line"><span class="comment">;=&gt; &#123;:kyle &#123;:date-joined "2009-01-01", :summary &#123;:average &#123;:monthly 3000,</span></span><br><span class="line"><span class="comment">;                                                          :yearly 12000&#125;&#125;&#125;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; get-in 可以嵌套读取值</span></span><br><span class="line">(<span class="name"><span class="builtin-name">get-in</span></span> users [<span class="symbol">:kyle</span> <span class="symbol">:summary</span> <span class="symbol">:average</span> <span class="symbol">:monthly</span>])</span><br><span class="line"><span class="comment">;=&gt; 1000</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; update-in 可以更新嵌套映射中的值，其不提供新值，而是提供一个函数</span></span><br><span class="line">(<span class="name"><span class="builtin-name">update-in</span></span> users [<span class="symbol">:kyle</span> <span class="symbol">:summary</span> <span class="symbol">:average</span> <span class="symbol">:monthly</span>] + <span class="number">500</span>)</span><br><span class="line"><span class="comment">;=&gt; &#123;:kyle &#123;:date-joined "2009-01-01", :summary &#123;:average &#123;:monthly 1500,</span></span><br><span class="line"><span class="comment">;                                                          :yearly 12000&#125;&#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>keys</code>将所有的键作为序列返回，<code>vals</code>则将所有的值作为序列返回。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">keys</span></span> &#123;<span class="symbol">:sundance</span> <span class="string">"spaniel"</span>, <span class="symbol">:darwin</span> <span class="string">"beagle"</span>&#125;)</span><br><span class="line"><span class="comment">;-&gt; (:sundance :darwin)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">vals</span></span> &#123;<span class="symbol">:sundance</span> <span class="string">"spaniel"</span>, <span class="symbol">:darwin</span> <span class="string">"beagle"</span>&#125;)</span><br><span class="line"><span class="comment">;-&gt; ("spaniel" "beagle")</span></span><br></pre></td></tr></table></figure>
+
+<p>无法确认究竟是键对应的值为 nil，还是这个键在映射表中根本就不存在。contains?函数就可以解决这个问题。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> score &#123;<span class="symbol">:stu</span> <span class="literal">nil</span> <span class="symbol">:joey</span> <span class="number">100</span>&#125;)</span><br><span class="line">(<span class="name"><span class="builtin-name">contains?</span></span> score <span class="symbol">:stu</span>)</span><br><span class="line"><span class="comment">;-&gt; true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="8-Set"><a href="#8-Set" class="headerlink" title="8. Set"></a>8. Set</h3><blockquote>
+<p>主要函数：<code>conj</code>，<code>disj</code>，<code>contains?</code>，<code>set</code>， <code>hash-set</code>，<code>sorted-set</code>，<code>union</code>，<code>intersection</code>，<code>difference</code>，<code>select</code></p>
+</blockquote>
+<p>Clojure set 工作方式和数学中的 set 是一样的，是一种集合，其中的元素无序且唯一。Clojure 支持两种不同的 set：排序的(sorted-set)和不排序的(hash-set)。sorted-set 会依据自然顺序对值进行排序。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#&#123;:a :b :c&#125;</span><br><span class="line"><span class="comment">;=&gt; #&#123;:c :b :a&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">conj</span></span> #&#123;<span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>&#125; <span class="symbol">:d</span>)</span><br><span class="line"><span class="comment">;=&gt; #&#123;:c :b :d :a&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">conj</span></span> #&#123;<span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>&#125; <span class="symbol">:a</span>)</span><br><span class="line"><span class="comment">;=&gt; #&#123;:c :b :a&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">disj</span></span> #&#123;<span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>&#125; <span class="symbol">:a</span>)</span><br><span class="line"><span class="comment">;=&gt; #&#123;:c :b&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">contains?</span></span> #&#123;<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>&#125; <span class="number">3</span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; set函数期望其第一个参数是个容器。而hash-set则接受可变的参数列表。</span></span><br><span class="line">(<span class="name">set</span> [<span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>])</span><br><span class="line"><span class="comment">;=&gt; #&#123;:c :b :a&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">hash-set</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>)</span><br><span class="line"><span class="comment">;=&gt; #&#123;1 3 2&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">sorted-set</span></span> <span class="number">2</span> <span class="number">3</span> <span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; #&#123;1 2 3&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="clojure-set-集合函数"><a href="#clojure-set-集合函数" class="headerlink" title="clojure.set 集合函数"></a>clojure.set 集合函数</h4><p>需先调用<code>(use &#39;clojure.set)</code>。</p>
+<p><code>union</code>返回的集合，包含了所有输入集合中的元素。<br><code>intersection</code>返回的集合，其所有元素都曾同时出现于多个输入集合中。<br><code>difference</code> 返回的集合，其所有元素都出现于第一个输入集合，但却未出现于第二个中。<br><code>select</code>返回所有元素都能与给定谓词相匹配的一个集合。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> languages #&#123;<span class="string">"java"</span> <span class="string">"c"</span> <span class="string">"d"</span> <span class="string">"clojure"</span>&#125;)</span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> beverages #&#123;<span class="string">"java"</span> <span class="string">"chai"</span> <span class="string">"pop"</span>&#125;)</span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">use</span></span> 'clojure.set)</span><br><span class="line">(<span class="name"><span class="builtin-name">union</span></span> languages beverages)</span><br><span class="line"><span class="comment">;=&gt; #&#123;"java" "c" "d" "clojure" "chai" "pop"&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">difference</span></span> languages beverages)</span><br><span class="line"><span class="comment">;=&gt; #&#123;"c" "d" "clojure"&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">intersection</span></span> languages beverages)</span><br><span class="line"><span class="comment">;=&gt; #&#123;"java"&#125;</span></span><br><span class="line">(<span class="name">select</span> #(<span class="name"><span class="builtin-name">=</span></span> <span class="number">1</span> (<span class="name">.length</span> %)) languages)</span><br><span class="line"><span class="comment">;=&gt; #&#123;"c" "d"&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>差集和并集除了是集合论的一部分，也是关系代数的一部分，下面介绍了投影、笛卡尔积、连接、重命名等方法。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">; 音乐作品集内存数据库示例</span></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> compositions</span><br><span class="line">   #&#123;&#123;<span class="symbol">:name</span> <span class="string">"The Art of the Fugue"</span> <span class="symbol">:composer</span> <span class="string">"J. S. Bach"</span>&#125;</span><br><span class="line">       &#123;<span class="symbol">:name</span> <span class="string">"Musical Offering"</span> <span class="symbol">:composer</span> <span class="string">"J. S. Bach"</span>&#125;</span><br><span class="line">       &#123;<span class="symbol">:name</span> <span class="string">"Requiem"</span> <span class="symbol">:composer</span> <span class="string">"Giuseppe Verdi"</span>&#125;</span><br><span class="line">       &#123;<span class="symbol">:name</span> <span class="string">"Requiem"</span> <span class="symbol">:composer</span> <span class="string">"W. A. Mozart"</span>&#125;&#125;)</span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> composers</span><br><span class="line">   #&#123;&#123;<span class="symbol">:composer</span> <span class="string">"J. S. Bach"</span> <span class="symbol">:country</span> <span class="string">"Germany"</span>&#125;</span><br><span class="line">       &#123;<span class="symbol">:composer</span> <span class="string">"W. A. Mozart"</span> <span class="symbol">:country</span> <span class="string">"Austria"</span>&#125;</span><br><span class="line">       &#123;<span class="symbol">:composer</span> <span class="string">"Giuseppe Verdi"</span> <span class="symbol">:country</span> <span class="string">"Italy"</span>&#125;&#125;)</span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> nations</span><br><span class="line">   #&#123;&#123;<span class="symbol">:nation</span> <span class="string">"Germany"</span> <span class="symbol">:language</span> <span class="string">"German"</span>&#125;</span><br><span class="line">       &#123;<span class="symbol">:nation</span> <span class="string">"Austria"</span> <span class="symbol">:language</span> <span class="string">"German"</span>&#125;</span><br><span class="line">       &#123;<span class="symbol">:nation</span> <span class="string">"Italy"</span> <span class="symbol">:language</span> <span class="string">"Italian"</span>&#125;&#125;)</span><br><span class="line"></span><br><span class="line">(<span class="name">select</span> #(<span class="name"><span class="builtin-name">=</span></span> (<span class="symbol">:name</span> %) <span class="string">"Requiem"</span>) compositions)</span><br><span class="line"><span class="comment">;=&gt; #&#123;&#123;:name "Requiem", :composer "W. A. Mozart"&#125;</span></span><br><span class="line"><span class="comment">;     &#123;:name "Requiem", :composer "Giuseppe Verdi"&#125;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; project函数返回的那些映射表中，仅包含与参数匹配的键。 (project relation keys)</span></span><br><span class="line">(<span class="name">project</span> compositions [<span class="symbol">:name</span>])</span><br><span class="line"><span class="comment">;=&gt; #&#123;&#123;:name "Musical Offering"&#125;</span></span><br><span class="line"><span class="comment">;     &#123;:name "Requiem"&#125;</span></span><br><span class="line"><span class="comment">;     &#123;:name "The Art of the Fugue"&#125;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; 笛卡尔积</span></span><br><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [m compositions c composers] (<span class="name"><span class="builtin-name">concat</span></span> m c))</span><br><span class="line"></span><br><span class="line"><span class="comment">; join 集合连接</span></span><br><span class="line">(<span class="name">join</span> compositions composers)</span><br><span class="line"><span class="comment">;=&gt; #&#123;&#123;:composer "W. A. Mozart", :country "Austria", :name "Requiem"&#125;</span></span><br><span class="line"><span class="comment">;  &#123;:composer "J. S. Bach", :country "Germany", :name "Musical Offering"&#125;</span></span><br><span class="line"><span class="comment">;  &#123;:composer "Giuseppe Verdi", :country "Italy", :name "Requiem"&#125;</span></span><br><span class="line"><span class="comment">;  &#123;:composer "J. S. Bach", :country "Germany", :name "The Art of the Fugue"&#125;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;如果两个关系中的键名不匹配，你可以传入一个keymap，将relation-1中的键名映射到relation-2中对应的键。</span></span><br><span class="line"><span class="comment">;例如，你可以将使用:country的composers，与使用:nation的nations相连接。</span></span><br><span class="line">(<span class="name">join</span> composers nations &#123;<span class="symbol">:country</span> <span class="symbol">:nation</span>&#125;)</span><br><span class="line"><span class="comment">;=&gt; #&#123;&#123;:composer "W. A. Mozart", :country "Austria", :nation "Austria", :language "German"&#125;</span></span><br><span class="line"><span class="comment">;  &#123;:composer "J. S. Bach", :country "Germany", :nation "Germany", :language "German"&#125;</span></span><br><span class="line"><span class="comment">;  &#123;:composer "Giuseppe Verdi", :country "Italy", :nation "Italy", :language "Italian"&#125;&#125;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">; 示例: 所有创作了安魂曲的作曲家们，家乡都在哪些国家</span></span><br><span class="line">(<span class="name">project</span></span><br><span class="line">  (<span class="name">join</span></span><br><span class="line">    (<span class="name">select</span> #(<span class="name"><span class="builtin-name">=</span></span> (<span class="symbol">:name</span> %) <span class="string">"Requiem"</span>) compositions)</span><br><span class="line">    composers)</span><br><span class="line">  [<span class="symbol">:country</span>])</span><br><span class="line"><span class="comment">;=&gt; #&#123;&#123;:country "Italy"&#125; &#123;:country "Austria"&#125;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; rename 可以给键(数据库的列)重命名</span></span><br><span class="line">(<span class="name">rename</span> compositions &#123;<span class="symbol">:name</span> <span class="symbol">:title</span>&#125;)</span><br><span class="line"><span class="comment">;=&gt;#&#123;&#123;:composer "Giuseppe Verdi", :title "Requiem"&#125;</span></span><br><span class="line"><span class="comment">;  &#123;:composer "W. A. Mozart", :title "Requiem"&#125;</span></span><br><span class="line"><span class="comment">;  &#123;:composer "J. S. Bach", :title "The Art of the Fugue"&#125;</span></span><br><span class="line"><span class="comment">;  &#123;:composer "J. S. Bach", :title "Musical Offering"&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="9-序列"><a href="#9-序列" class="headerlink" title="9. 序列"></a>9. 序列</h3><p>序列是一个接口(<code>ISeq</code>)，Clojure 数据结构、函数和宏都普遍实现这个接口，序列抽象使所有数据结构的外表和行为像列表一样。</p>
+<p><code>first</code>返回序列的第一个元素，<code>rest</code>返回排除第一个元素的序列，但是对所有集合类型采取相同的方式。</p>
+<p><code>cons</code>会在序列的开始位置(即使是向量也一样)添加一个元素。</p>
+<p>序列抽象通常是惰性的，尽管 first、rest、cons的结果打印出来像一个列表，但它们并没有进行创建列表的额外工作。序列抽象使一切都像操纵真正的列表一样，但是避免真正地创建任何新数据结构或者进行任何不必要的工作。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">first</span></span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>))</span><br><span class="line"><span class="comment">;=&gt; 1</span></span><br><span class="line">(<span class="name"><span class="builtin-name">rest</span></span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>))</span><br><span class="line"><span class="comment">;=&gt; (2 3)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">first</span></span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>])</span><br><span class="line"><span class="comment">;=&gt; 1</span></span><br><span class="line">(<span class="name"><span class="builtin-name">rest</span></span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>])</span><br><span class="line"><span class="comment">;=&gt; (2 3)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">first</span></span> &#123;<span class="symbol">:a</span> <span class="number">1</span> <span class="symbol">:b</span> <span class="number">2</span>&#125;)               <span class="comment">; 不保证项的顺序</span></span><br><span class="line"><span class="comment">;=&gt; [:b 2]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">rest</span></span> &#123;<span class="symbol">:a</span> <span class="number">1</span> <span class="symbol">:b</span> <span class="number">2</span>&#125;)</span><br><span class="line"><span class="comment">;=&gt; ([:a 1])</span></span><br><span class="line">(<span class="name"><span class="builtin-name">first</span></span> [])                        <span class="comment">; 空集合调用first返回nil</span></span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">rest</span></span> [])                         <span class="comment">; 空集合调用 rest 返回空序列</span></span><br><span class="line"><span class="comment">;=&gt; ()</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">cons</span></span> <span class="number">1</span> [<span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>])</span><br><span class="line"><span class="comment">;=&gt; (1 2 3 4 5)</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">list?</span></span> (<span class="name"><span class="builtin-name">cons</span></span> <span class="number">1</span> (<span class="name"><span class="builtin-name">list</span></span> <span class="number">2</span> <span class="number">3</span>)))</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="一切皆序列"><a href="#一切皆序列" class="headerlink" title="一切皆序列"></a>一切皆序列</h4><blockquote>
+<p>主要函数：<code>first</code>，<code>rest</code>，<code>cons</code>，<code>seq</code>， <code>next</code></p>
+</blockquote>
+<p>可被视为序列的容器，被称为<strong>可序化</strong>的，可序化的容器包括：所有的Clojure容器、所有的Java容器、Java数组和字符串、正则表达式的匹配结果、目录结构、输入/输出流、XML树。</p>
+<p>除了序列三大核心<code>first</code>、<code>rest</code>、<code>cons</code>，还有<code>seq</code>，seq 函数会返回一个序列，该序列源自任何一个可序化的其他容器。<code>next</code> 函数也会返回一个序列，该序列由除第一个元素以外的其他所有元素组成。<code>(next aseq)</code>等价于 <code>(seq (rest aseq))</code>。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">seq</span></span> <span class="literal">nil</span>)</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">seq</span></span> ())</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">rest</span></span> ())</span><br><span class="line"><span class="comment">;=&gt; ()</span></span><br><span class="line">(<span class="name"><span class="builtin-name">next</span></span> ())</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">seq</span></span> (<span class="name"><span class="builtin-name">rest</span></span> ()))</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="conj-amp-into"><a href="#conj-amp-into" class="headerlink" title="conj &amp; into"></a>conj &amp; into</h4><p><code>conj</code> 会向容器添加一个或是多个元素，<code>into</code> 则会把容器中的所有元素添加至另一个容器。这两个方法的返回值类型不是序列，而是容器类型。<br>添加数据时，conj和into都会根据底层数据结构的特点选取最高效的插入点。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;对于列表而言，conj和into会在其前端进行添加。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">conj</span></span> '(<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>) <span class="symbol">:a</span>)</span><br><span class="line"><span class="comment">;=&gt; (:a 1 2 3)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">into</span></span> '(<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>) '(<span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>))</span><br><span class="line"><span class="comment">;=&gt; (:c :b :a 1 2 3)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;而对于向量，conj和into则会把元素添加至末尾。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">conj</span></span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>] <span class="symbol">:a</span>)</span><br><span class="line"><span class="comment">;=&gt; [1 2 3 :a]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">into</span></span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>] [<span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>])</span><br><span class="line"><span class="comment">;=&gt; [1 2 3 :a :b :c]</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="创建序列"><a href="#创建序列" class="headerlink" title="创建序列"></a>创建序列</h4><blockquote>
+<p>主要函数：<code>range</code>，<code>repeat</code>，<code>take</code>，<code>iterate</code>， <code>cycle</code>，<code>interleave</code>，<code>interpose</code></p>
+</blockquote>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;ranage会生成一个从start开始到end结束的序列，每次的增量为step。 (range start? end step?)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">range</span></span> <span class="number">10</span>)</span><br><span class="line"><span class="comment">;=&gt; (0 1 2 3 4 5 6 7 8 9)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">range</span></span> <span class="number">10</span> <span class="number">20</span>)</span><br><span class="line"><span class="comment">;=&gt; (10 11 12 13 14 15 16 17 18 19)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> <span class="number">25</span> <span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; (1 3 5 7 9 11 13 15 17 19 21 23)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;repeat函数会重复n次元素x。 (repeat n x)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">repeat</span></span> <span class="number">5</span> <span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; (1 1 1 1 1)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">repeat</span></span> <span class="number">10</span> <span class="string">"x"</span>)</span><br><span class="line"><span class="comment">;=&gt; ("x" "x" "x" "x" "x" "x" "x" "x" "x" "x")</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;(iterate f x) iterate起始于值x，并持续地对每个值应用函数f，以计算下一个值，直至永远。</span></span><br><span class="line"><span class="comment">;由于这是个无限序列，你需要另一个新函数 (take n sequence)。take会返回一个包含了容器中前n项元素的惰性序列。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">take</span></span> <span class="number">10</span> (<span class="name"><span class="builtin-name">iterate</span></span> inc <span class="number">1</span>))</span><br><span class="line"><span class="comment">;=&gt; (1 2 3 4 5 6 7 8 9 10)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;cycle函数接受一个容器，并无限的对其进行循环。 (cycle coll)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">take</span></span> <span class="number">10</span> (<span class="name"><span class="builtin-name">cycle</span></span> (<span class="name"><span class="builtin-name">range</span></span> <span class="number">3</span>)))</span><br><span class="line"><span class="comment">;=&gt; (0 1 2 0 1 2 0 1 2 0)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;interleave函数接受多个容器作为参数，并产生一个新的容器，这个新容器会从每个参数容器中交错地提取元素，直至其中某个容器元素被耗尽。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> whole-numbers [] (<span class="name"><span class="builtin-name">iterate</span></span> inc <span class="number">1</span>))</span><br><span class="line">(<span class="name">interleave</span> (<span class="name">whole-numbers</span>) [<span class="string">"A"</span> <span class="string">"B"</span> <span class="string">"C"</span> <span class="string">"D"</span> <span class="string">"E"</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment">;interpose函数，把输入序列中的每个元素用分隔符隔开，并作为新的序列返回。(interpose separator coll)</span></span><br><span class="line">(<span class="name">interpose</span> <span class="string">","</span> [<span class="string">"apples"</span> <span class="string">"bananas"</span> <span class="string">"grapes"</span>])</span><br><span class="line"><span class="comment">;=&gt; ("apples" "," "bananas" "," "grapes")</span></span><br><span class="line"><span class="comment">;(apply f args* argseq)apply函数接受一个函数f、一些可选的args和一个序列argseq作为参数。之后会调用 f，并将args和argseq解开为一个参数列表传给f。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">apply</span></span> str (<span class="name">interpose</span> \, [<span class="string">"apples"</span> <span class="string">"bananas"</span> <span class="string">"grapes"</span>]))</span><br><span class="line"><span class="comment">;=&gt; "apples,bananas,grapes"</span></span><br><span class="line"><span class="comment">;(join separator sequence)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">use</span></span> '[clojure.string <span class="symbol">:only</span> (<span class="name">join</span>)])</span><br><span class="line">(<span class="name">join</span> \, [<span class="string">"apples"</span> <span class="string">"bananas"</span> <span class="string">"grapes"</span>])</span><br><span class="line"><span class="comment">;=&gt; "apples,bananas,grapes"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;对应每种Clojure中的容器类型，都有一个可以接受任意数量参数的函数，用来创建该类型的容器。</span></span><br><span class="line"><span class="comment">;hash-set与set与其工作方式稍有不同：set函数期望其第一个参数是个容器。而hash-set则接受可变的参数列表。</span></span><br><span class="line">(<span class="name">set</span> [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>])</span><br><span class="line"><span class="comment">;=&gt; #&#123;1 3 2&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">hash-set</span></span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span>)</span><br><span class="line"><span class="comment">;=&gt; #&#123;1 3 2&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;vector也有一个近亲vec，vec接受容器作为参数，而非可变的参数列表。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">vec</span></span> (<span class="name"><span class="builtin-name">range</span></span> <span class="number">3</span>))</span><br><span class="line"><span class="comment">;=&gt; [0 1 2]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">vector</span></span> <span class="number">0</span> <span class="number">1</span> <span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; [0 1 2]</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="过滤序列"><a href="#过滤序列" class="headerlink" title="过滤序列"></a>过滤序列</h4><blockquote>
+<p>主要函数：<code>filter</code>，<code>take-while</code>，<code>drop-while</code>，<code>split-at</code>， <code>split-with</code></p>
+</blockquote>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> whole-numbers [] (<span class="name"><span class="builtin-name">iterate</span></span> inc <span class="number">1</span>))</span><br><span class="line"><span class="comment">;(filter pred coll) filter接受一个谓词和一个容器作为参数，并返回一个序列，这个序列的所有元素都经谓词判定为真。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">take</span></span> <span class="number">10</span> (<span class="name"><span class="builtin-name">filter</span></span> even? (<span class="name">whole-numbers</span>)))</span><br><span class="line"><span class="comment">;=&gt; (2 4 6 8 10 12 14 16 18 20)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;使用take-while从序列中截取开头的一段，其每个元素都被谓词判定为真。 (take-while pred coll)</span></span><br><span class="line"><span class="comment">;字符串中逐个获取第一个元音字符之前的所有非元音字符</span></span><br><span class="line">(<span class="name"><span class="builtin-name">take-while</span></span> (<span class="name"><span class="builtin-name">complement</span></span> #&#123;\a\e\i\o\u&#125;) <span class="string">"the-quick-brown-fox"</span>)</span><br><span class="line"><span class="comment">;=&gt; (\t \h)</span></span><br><span class="line"><span class="comment">;1、集合同时也可作为函数。所以你可以把#&#123;\a\e\i\o\u&#125;读作“元音集”，或是“用于检测参数是否为元音的函数。”</span></span><br><span class="line"><span class="comment">;2、complement 会反转另一个函数的行为。前例的那个反转函数用于检测参数是不是一个元音。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;与take-while相对的是drop-while函数。drop-while 从序列的起始位置开始，逐个丢弃元素，直至谓词判定为真，然后返回序列剩余的部分。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">drop-while</span></span> (<span class="name"><span class="builtin-name">complement</span></span> #&#123;\a\e\i\o\u&#125;) <span class="string">"the-quick-brown-fox"</span>)</span><br><span class="line"><span class="comment">;=&gt; (\e \- \q \u \i \c \k \- \b \r \o \w \n \- \f \o \x)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;split-at和split-with能把一个容器一分为二。(split-at index coll) (split-with pred coll)</span></span><br><span class="line"><span class="comment">;split-at接受一个索引作为参数，而split-with则接受一个谓词。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">split-at</span></span> <span class="number">5</span> (<span class="name"><span class="builtin-name">range</span></span> <span class="number">10</span>))</span><br><span class="line"><span class="comment">;=&gt;[(0 1 2 3 4) (5 6 7 8 9)]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">split-with</span></span> #(<span class="name"><span class="builtin-name">&lt;=</span></span> % <span class="number">10</span>) (<span class="name"><span class="builtin-name">range</span></span> <span class="number">0</span> <span class="number">20</span> <span class="number">2</span>))</span><br><span class="line"><span class="comment">;=&gt;[(0 2 4 6 8 10) (12 14 16 18)]</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="序列谓词"><a href="#序列谓词" class="headerlink" title="序列谓词"></a>序列谓词</h4><blockquote>
+<p>主要函数：<code>every?</code>，<code>some</code>，<code>not-every?</code>，<code>not-any?</code></p>
+</blockquote>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;every？要求其他谓词对序列中的每个元素都必须判定为真。</span></span><br><span class="line">(<span class="name">every?</span> odd? [<span class="number">1</span> <span class="number">3</span> <span class="number">5</span>])</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line">(<span class="name">every?</span> odd? [<span class="number">1</span> <span class="number">3</span> <span class="number">5</span> <span class="number">8</span>])</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line"><span class="comment">;(some pred coll)  只要有一个元素被谓词判定为非假，some就会返回这个值，如果没有任何元素符合，则some返回nil。</span></span><br><span class="line">(<span class="name">some</span> even? [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>])</span><br><span class="line">-&gt; true</span><br><span class="line">(<span class="name">some</span> even? [<span class="number">1</span> <span class="number">3</span> <span class="number">5</span>])</span><br><span class="line">-&gt; nil</span><br><span class="line"><span class="comment">;some 返回的是第一个符合项的值，而非 true。</span></span><br><span class="line">(<span class="name">some</span> identity [<span class="literal">nil</span> <span class="literal">false</span> <span class="number">1</span> <span class="literal">nil</span> <span class="number">2</span>])</span><br><span class="line"><span class="comment">;=&gt; 1</span></span><br><span class="line">(<span class="name"><span class="builtin-name">not-every?</span></span> even? (<span class="name">whole-numbers</span>))</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line">(<span class="name"><span class="builtin-name">not-any?</span></span> even? (<span class="name">whole-numbers</span>))</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="序列转换"><a href="#序列转换" class="headerlink" title="序列转换"></a>序列转换</h4><blockquote>
+<p>主要函数：<code>map</code>，<code>reduce</code>，<code>sort</code>，<code>sort-by</code>，<code>for</code></p>
+</blockquote>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;映射函数map (map f coll) map接受一个源容器coll和一个函数f作为参数，并返回一个新的序列。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">map</span></span> #(<span class="name"><span class="builtin-name">format</span></span> <span class="string">"&lt;p&gt;%s&lt;/p&gt;"</span> %) [<span class="string">"the"</span> <span class="string">"quick"</span> <span class="string">"brown"</span> <span class="string">"fox"</span>])</span><br><span class="line"><span class="comment">;=&gt; ("&lt;p&gt;the&lt;/p&gt;" "&lt;p&gt;quick&lt;/p&gt;" "&lt;p&gt;brown&lt;/p&gt;" "&lt;p&gt;fox&lt;/p&gt;")</span></span><br><span class="line"><span class="comment">;还可以传入多个容器给map。在这种情况下，f必须是一个多参函数。map会从每个容器分别取出一个值，作为参数来调用f，直到数量最少的那个容器被耗尽为止。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">map</span></span> #(<span class="name"><span class="builtin-name">format</span></span> <span class="string">"&lt;%s&gt;%s&lt;/%s&gt;"</span> %<span class="number">1</span> %<span class="number">2</span> %<span class="number">1</span>)</span><br><span class="line">     [<span class="string">"h1"</span> <span class="string">"h2"</span> <span class="string">"h3"</span> <span class="string">"h1"</span>] [<span class="string">"the"</span> <span class="string">"quick"</span> <span class="string">"brown"</span> <span class="string">"fox"</span>])</span><br><span class="line"><span class="comment">;=&gt; ("&lt;h1&gt;the&lt;/h1&gt;" "&lt;h2&gt;quick&lt;/h2&gt;" "&lt;h3&gt;brown&lt;/h3&gt;" "&lt;h1&gt;fox&lt;/h1&gt;")</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;归纳函数reduce (reduce f coll) reduce首先用coll的前两个元素作为参数来调用f，然后用得到的结果和第三个元素作为参数，继续调用f。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">reduce</span></span> + (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> <span class="number">11</span>))</span><br><span class="line"><span class="comment">;=&gt; 55</span></span><br><span class="line">(<span class="name"><span class="builtin-name">reduce</span></span> * (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> <span class="number">11</span>))</span><br><span class="line"><span class="comment">;=&gt; 3628800</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;(sort comp? coll) (sort-by a-fn comp? coll)  sort 会依据元素的自然顺序对容器进行排序，sort-by 则会对每个元素调用 a-fn，再依据得到的结果序列来进行排序。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">sort</span></span> [<span class="number">42</span> <span class="number">1</span> <span class="number">7</span> <span class="number">11</span>])</span><br><span class="line"><span class="comment">;=&gt; (1 7 11 42)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">sort-by</span></span> #(<span class="name">.toString</span> %) [<span class="number">42</span> <span class="number">1</span> <span class="number">7</span> <span class="number">11</span>])</span><br><span class="line"><span class="comment">;=&gt;` (1 11 42 7)</span></span><br><span class="line"><span class="comment">;可以为sort或sort-by指定一个可选的比较函数comp。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">sort</span></span> &gt; [<span class="number">42</span> <span class="number">1</span> <span class="number">7</span> <span class="number">11</span>])</span><br><span class="line"><span class="comment">;=&gt; (42 11 7 1)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">sort-by</span></span> <span class="symbol">:grade</span> &gt; [&#123;<span class="symbol">:grade</span> <span class="number">83</span>&#125; &#123;<span class="symbol">:grade</span> <span class="number">90</span>&#125; &#123;<span class="symbol">:grade</span> <span class="number">77</span>&#125;])</span><br><span class="line"><span class="comment">;=&gt; (&#123;:grade 90&#125; &#123;:grade 83&#125; &#123;:grade 77&#125;)</span></span><br></pre></td></tr></table></figure>
+
+<p>Clojure把列表解析的概念泛化为了序列解析（sequence comprehension）。在Clojure中，是使用for宏来进行解析的。列表解析比诸如 map 和filter 这样的函数更加通用，而且，事实上它可以模拟之前的大多数过滤和转换函数。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [binding-form coll-expr filter-expr? ...] expr)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> whole-numbers [] (<span class="name"><span class="builtin-name">iterate</span></span> inc <span class="number">1</span>))</span><br><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [word [<span class="string">"the"</span> <span class="string">"quick"</span> <span class="string">"brown"</span> <span class="string">"fox"</span>]] (<span class="name"><span class="builtin-name">format</span></span> <span class="string">"&lt;p&gt;%s&lt;/p&gt;"</span> word))</span><br><span class="line"><span class="comment">;=&gt; ("&lt;p&gt;the&lt;/p&gt;" "&lt;p&gt;quick&lt;/p&gt;" "&lt;p&gt;brown&lt;/p&gt;" "&lt;p&gt;fox&lt;/p&gt;")</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;借助:when子句，解析也可以用来模拟filter函数。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">take</span></span> <span class="number">10</span> (<span class="name"><span class="builtin-name">for</span></span> [n (<span class="name">whole-numbers</span>) <span class="symbol">:when</span> (<span class="name"><span class="builtin-name">even?</span></span> n)] n))</span><br><span class="line"><span class="comment">;=&gt; (2 4 6 8 10 12 14 16 18 20)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;只要:while字句的表达式保持为真，它就会继续进行求值。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [n (<span class="name">whole-numbers</span>) <span class="symbol">:while</span> (<span class="name"><span class="builtin-name">even?</span></span> n)] n)</span><br><span class="line"><span class="comment">;=&gt; ()</span></span><br><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [n (<span class="name">whole-numbers</span>) <span class="symbol">:while</span> (<span class="name"><span class="builtin-name">odd?</span></span> n)] n)</span><br><span class="line"><span class="comment">;=&gt; (1)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [n (<span class="name">whole-numbers</span>) <span class="symbol">:while</span> (<span class="name"><span class="builtin-name">&lt;</span></span> n <span class="number">5</span>)] n)</span><br><span class="line"><span class="comment">;=&gt; (1 2 3 4)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;多个绑定表达式</span></span><br><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [file <span class="string">"ABCDEFGH"</span> rank (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> <span class="number">9</span>)] (<span class="name"><span class="builtin-name">format</span></span> <span class="string">"%c%d"</span> file rank))</span><br><span class="line"><span class="comment">;=&gt; ("A1" "A2" ...已省略... "H7 ""H8")</span></span><br><span class="line">(<span class="name"><span class="builtin-name">for</span></span> [rank (<span class="name"><span class="builtin-name">range</span></span> <span class="number">1</span> <span class="number">9</span>) file <span class="string">"ABCDEFGH"</span>] (<span class="name"><span class="builtin-name">format</span></span> <span class="string">"%c%d"</span> file rank))</span><br><span class="line"><span class="comment">;=&gt; ("A1" "B1"... "G8" "H8")</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="序化正则表达式、文件系统、流"><a href="#序化正则表达式、文件系统、流" class="headerlink" title="序化正则表达式、文件系统、流"></a>序化正则表达式、文件系统、流</h4><ul>
+<li>正则表达式：</li>
+</ul>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> matcher (<span class="name">re-matcher</span> #<span class="string">"\d+"</span> <span class="string">"abc12345def678"</span>))</span><br><span class="line"><span class="comment">;=&gt;#'user/matcher</span></span><br><span class="line">(<span class="name"><span class="builtin-name">re-find</span></span> matcher)</span><br><span class="line"><span class="comment">;=&gt;"12345"</span></span><br><span class="line">(<span class="name"><span class="builtin-name">re-find</span></span> matcher)</span><br><span class="line"><span class="comment">;=&gt; "678"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;; If you only want the first match, it is shorter to call re-find with the pattern and the string to search, rather than explicitly creating a matcher as above.</span></span><br><span class="line">(<span class="name"><span class="builtin-name">re-find</span></span> #<span class="string">"\d+"</span> <span class="string">"abc12345def"</span>)</span><br><span class="line"><span class="comment">;=&gt;"12345"</span></span><br></pre></td></tr></table></figure>
+
+<p>  使用正则更好的做法：<code>(re-seq regexp string)</code>  re-seq 会把匹配结果暴露为一个不可变的序列。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">re-seq</span> #<span class="string">"\w+"</span> <span class="string">"the quick brown fox"</span>)</span><br><span class="line"><span class="comment">;=&gt; ("the" "quick" "brown" "fox")</span></span><br><span class="line">(<span class="name"><span class="builtin-name">sort</span></span> (<span class="name">re-seq</span> #<span class="string">"\w+"</span> <span class="string">"the quick brown fox"</span>))</span><br><span class="line"><span class="comment">;=&gt; ("brown" "fox" "quick" "the")</span></span><br><span class="line">(<span class="name"><span class="builtin-name">drop</span></span> <span class="number">2</span> (<span class="name">re-seq</span> #<span class="string">"\w+"</span> <span class="string">"the quick brown fox"</span>))</span><br><span class="line"><span class="comment">;=&gt; ("brown" "fox")</span></span><br><span class="line">(<span class="name"><span class="builtin-name">map</span></span> #(<span class="name">.toUpperCase</span> %) (<span class="name">re-seq</span> #<span class="string">"\w+"</span> <span class="string">"the quick brown fox"</span>))</span><br><span class="line"><span class="comment">;=&gt; ("THE" "QUICK" "BROWN" "FOX")</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>文件系统：</li>
+</ul>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">import</span></span> '(<span class="name">java.io</span> File))</span><br><span class="line"><span class="comment">; 返回的是File数组，而非序列</span></span><br><span class="line">(<span class="name">.listFiles</span> (<span class="name">File.</span> <span class="string">"."</span>))</span><br><span class="line"><span class="comment">; 返回序列</span></span><br><span class="line">(<span class="name"><span class="builtin-name">seq</span></span> (<span class="name">.listFiles</span> (<span class="name">File.</span> <span class="string">"."</span>)) )</span><br><span class="line"><span class="comment">; 想要获取name时可以使用map,一旦你决定使用诸如map这样的函数，再调用seq就会显得多余。序列库中的函数会替你调用seq。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">map</span></span> #(<span class="name">.getName</span> %) (<span class="name">.listFiles</span> (<span class="name">File.</span> <span class="string">"."</span>)))</span><br><span class="line"></span><br><span class="line"><span class="comment">;遍历整个目录树。Clojure通过file-seq提供了一个深度优先的遍历方式</span></span><br><span class="line">(<span class="name">file-seq</span> (<span class="name">File.</span> <span class="string">"."</span>))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>流：</li>
+</ul>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">use</span></span> '[clojure.java.io <span class="symbol">:only</span> (<span class="name">reader</span>)])</span><br><span class="line"><span class="comment">; 统计文件多少行</span></span><br><span class="line">(<span class="name"><span class="builtin-name">with-open</span></span> [rdr (<span class="name">reader</span> <span class="string">"src/examples/java.clj"</span>)]</span><br><span class="line">      (<span class="name"><span class="builtin-name">count</span></span> (<span class="name"><span class="builtin-name">line-seq</span></span> rdr)))</span><br><span class="line"><span class="comment">; 仅对非空行计数</span></span><br><span class="line">(<span class="name"><span class="builtin-name">with-open</span></span> [rdr (<span class="name">reader</span> <span class="string">"src/examples/utils.clj"</span>)]</span><br><span class="line">      (<span class="name"><span class="builtin-name">count</span></span> (<span class="name"><span class="builtin-name">filter</span></span> #(<span class="name"><span class="builtin-name">re-find</span></span> #<span class="string">"\S"</span> %) (<span class="name"><span class="builtin-name">line-seq</span></span> rdr))))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>综合示例：获取clj代码行数</li>
+</ul>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">use</span></span> '[clojure.java.io <span class="symbol">:only</span> (<span class="name">reader</span>)])</span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> non-blank? [line] (<span class="name"><span class="builtin-name">if</span></span> (<span class="name"><span class="builtin-name">re-find</span></span> #<span class="string">"\S"</span> line) <span class="literal">true</span> <span class="literal">false</span>))</span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> non-svn? [file] (<span class="name"><span class="builtin-name">not</span></span> (<span class="name">.contains</span> (<span class="name">.toString</span> file) <span class="string">".svn"</span>)))</span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> clojure-source? [file] (<span class="name">.endsWith</span> (<span class="name">.toString</span> file) <span class="string">".clj"</span>))</span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> clojure-loc [base-file]</span><br><span class="line">     (<span class="name"><span class="builtin-name">reduce</span></span></span><br><span class="line">           +</span><br><span class="line">           (<span class="name"><span class="builtin-name">for</span></span> [file (<span class="name">file-seq</span> base-file)</span><br><span class="line">                   　　　 <span class="symbol">:when</span> (<span class="name"><span class="builtin-name">and</span></span> (<span class="name">clojure-source?</span> file) (<span class="name">non-svn?</span> file))]</span><br><span class="line">                   (<span class="name"><span class="builtin-name">with-open</span></span> [rdr (<span class="name">reader</span> file)]</span><br><span class="line">                          　　　 (<span class="name"><span class="builtin-name">count</span></span> (<span class="name"><span class="builtin-name">filter</span></span> non-blank? (<span class="name"><span class="builtin-name">line-seq</span></span> rdr)))))))</span><br></pre></td></tr></table></figure>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" title= "[Leetcode单排] 排列系列（N46 N47 N784）">
+                    <div class="nextTitle">[Leetcode单排] 排列系列（N46 N47 N784）</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Clojure-概述"><span class="toc-number">1.</span> <span class="toc-text">Clojure 概述</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Clojure-是-Lisp-的一个变种"><span class="toc-number">1.1.</span> <span class="toc-text">1.  Clojure 是 Lisp 的一个变种</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Clojure-以JVM为宿主"><span class="toc-number">1.2.</span> <span class="toc-text">2. Clojure 以JVM为宿主</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Clojure-是一种函数式编程语言"><span class="toc-number">1.3.</span> <span class="toc-text">3. Clojure 是一种函数式编程语言</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Clojure-基础"><span class="toc-number">2.</span> <span class="toc-text">Clojure 基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#前期准备"><span class="toc-number">2.1.</span> <span class="toc-text">前期准备</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Clojure-REPL（读取-求值-打印循环）"><span class="toc-number">2.1.1.</span> <span class="toc-text">1. Clojure REPL（读取 - 求值 - 打印循环）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-特殊-REPL-变量"><span class="toc-number">2.1.2.</span> <span class="toc-text">2. 特殊 REPL 变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-文档查找"><span class="toc-number">2.1.3.</span> <span class="toc-text">3. 文档查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-其他细节"><span class="toc-number">2.1.4.</span> <span class="toc-text">4.  其他细节</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Clojure-数据结构"><span class="toc-number">2.2.</span> <span class="toc-text">Clojure 数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-nil-真值-价值"><span class="toc-number">2.2.1.</span> <span class="toc-text">1. nil / 真值 / 价值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-字符-字符串"><span class="toc-number">2.2.2.</span> <span class="toc-text">2. 字符 / 字符串</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-数值"><span class="toc-number">2.2.3.</span> <span class="toc-text">3.  数值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-符号-关键字"><span class="toc-number">2.2.4.</span> <span class="toc-text">4. 符号 / 关键字</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-列表"><span class="toc-number">2.2.5.</span> <span class="toc-text">5. 列表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-向量"><span class="toc-number">2.2.6.</span> <span class="toc-text">6. 向量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-映射"><span class="toc-number">2.2.7.</span> <span class="toc-text">7. 映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-Set"><span class="toc-number">2.2.8.</span> <span class="toc-text">8. Set</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#clojure-set-集合函数"><span class="toc-number">2.2.8.1.</span> <span class="toc-text">clojure.set 集合函数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-序列"><span class="toc-number">2.2.9.</span> <span class="toc-text">9. 序列</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#一切皆序列"><span class="toc-number">2.2.9.1.</span> <span class="toc-text">一切皆序列</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#conj-amp-into"><span class="toc-number">2.2.9.2.</span> <span class="toc-text">conj &amp; into</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建序列"><span class="toc-number">2.2.9.3.</span> <span class="toc-text">创建序列</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#过滤序列"><span class="toc-number">2.2.9.4.</span> <span class="toc-text">过滤序列</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#序列谓词"><span class="toc-number">2.2.9.5.</span> <span class="toc-text">序列谓词</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#序列转换"><span class="toc-number">2.2.9.6.</span> <span class="toc-text">序列转换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#序化正则表达式、文件系统、流"><span class="toc-number">2.2.9.7.</span> <span class="toc-text">序化正则表达式、文件系统、流</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 10
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
