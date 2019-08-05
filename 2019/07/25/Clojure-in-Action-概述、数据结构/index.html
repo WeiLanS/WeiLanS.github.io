@@ -503,7 +503,7 @@ height:40vh;
 <p><code>peek</code>和<code>pop</code>也适用于向量，方法会查看向量的尾部，而不是列表的表头。</p>
 <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">peek</span></span> [<span class="number">1</span> <span class="number">2</span>])</span><br><span class="line"><span class="comment">;=&gt; 2</span></span><br><span class="line">(<span class="name"><span class="builtin-name">pop</span></span> [<span class="number">1</span> <span class="number">2</span>])</span><br><span class="line"><span class="comment">;=&gt; [1]</span></span><br><span class="line">(<span class="name"><span class="builtin-name">peek</span></span> [])                                         </span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line">(<span class="name"><span class="builtin-name">pop</span></span> [])                                          </span><br><span class="line"><span class="comment">;IllegalStateException Can't pop empty vector  clojure.lang.PersistentVector.pop (PersistentVector.java:381)</span></span><br></pre></td></tr></table></figure>
 
-<p>向量本身也是取单一参数的函数。</p>
+<p>向量本身也是取单一参数的函数。(但向量函数不接受第二个参数)</p>
 <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">the-vector</span> <span class="number">3</span>)</span><br><span class="line"><span class="comment">;=&gt; 40</span></span><br></pre></td></tr></table></figure>
 
 <p><code>subvec</code>会返回向量的一个子向量 <code>(subvec avec start end?)</code>。若未指定end，则默认为向量的末尾。</p>
@@ -512,7 +512,7 @@ height:40vh;
 <h3 id="7-映射"><a href="#7-映射" class="headerlink" title="7. 映射"></a>7. 映射</h3><blockquote>
 <p>主要函数：<code>hash-map</code>，<code>sorted-map</code>，<code>assoc</code>，<code>dissoc</code>，<code>select-keys</code>，<code>merge</code>， <code>merge-with</code>，<code>assoc-in</code>，<code>get-in</code>，<code>update-in</code>，<code>keys</code>，<code>vals</code>，<code>contains?</code>，<code>get</code>，<code>函数本身</code></p>
 </blockquote>
-<p>一个映射就是一个键值对序列。映射可以使用<code>hash-map</code>函数构建。依据键获取对应的值时除了使用<code>get</code>函数外，映射本身也是一个函数，Clojure本身也是一个函数。</p>
+<p>一个映射就是一个键值对序列。映射可以使用<code>hash-map</code>函数构建。依据键获取对应的值时除了使用<code>get</code>函数外，映射本身也是一个函数。</p>
 <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> the-map &#123;<span class="symbol">:a</span> <span class="number">1</span> <span class="symbol">:b</span> <span class="number">2</span> <span class="symbol">:c</span> <span class="number">3</span>&#125;)</span><br><span class="line"><span class="comment">;=&gt; #'user/the-map</span></span><br><span class="line">(<span class="name"><span class="builtin-name">hash-map</span></span> <span class="symbol">:a</span> <span class="number">1</span> <span class="symbol">:b</span> <span class="number">2</span> <span class="symbol">:c</span> <span class="number">3</span>)</span><br><span class="line"><span class="comment">;=&gt; &#123;:a 1, :c 3, :b 2&#125;</span></span><br><span class="line"></span><br><span class="line">(<span class="name">the-map</span> <span class="symbol">:b</span>)</span><br><span class="line"><span class="comment">;=&gt; 2</span></span><br><span class="line">(<span class="symbol">:b</span> the-map)</span><br><span class="line"><span class="comment">;=&gt; 2</span></span><br><span class="line">(<span class="symbol">:z</span> the-map <span class="number">26</span>)          <span class="comment">; 若未找到关键字则返回一个默认值</span></span><br><span class="line"><span class="comment">;=&gt; 26</span></span><br><span class="line">(<span class="name"><span class="builtin-name">get</span></span> the-map <span class="symbol">:z</span> <span class="number">26</span>) </span><br><span class="line"><span class="comment">;=&gt; 26</span></span><br><span class="line">(<span class="name">the-map</span> <span class="symbol">:z</span> <span class="number">26</span>) </span><br><span class="line"><span class="comment">;=&gt; 26</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">sorted-map</span></span> <span class="symbol">:c</span> <span class="number">3</span> <span class="symbol">:b</span> <span class="number">2</span> <span class="symbol">:a</span> <span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; &#123;:a 1, :b 2, :c 3&#125;</span></span><br></pre></td></tr></table></figure>
 
 <p>映射字面量和 hash-map 函数不完全等价，Clojure 实际上有<code>哈希映射(hash-map)</code>以及<code>数组映射(array-map)</code>。数组映射以有序方式保存键和值，以扫描的方式进行查找。如果使用 assoc 函数将太多键关联到一个数组映射，那将会得到一个哈希映射（而哈希映射变得太小不会反悔一个数组映射）。透明地替换数据结构的实现是 Clojure 提高性能的常用技巧。</p>
@@ -526,7 +526,7 @@ height:40vh;
 <p><code>keys</code>将所有的键作为序列返回，<code>vals</code>则将所有的值作为序列返回。</p>
 <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">keys</span></span> &#123;<span class="symbol">:sundance</span> <span class="string">"spaniel"</span>, <span class="symbol">:darwin</span> <span class="string">"beagle"</span>&#125;)</span><br><span class="line"><span class="comment">;-&gt; (:sundance :darwin)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">vals</span></span> &#123;<span class="symbol">:sundance</span> <span class="string">"spaniel"</span>, <span class="symbol">:darwin</span> <span class="string">"beagle"</span>&#125;)</span><br><span class="line"><span class="comment">;-&gt; ("spaniel" "beagle")</span></span><br></pre></td></tr></table></figure>
 
-<p>无法确认究竟是键对应的值为 nil，还是这个键在映射表中根本就不存在。contains?函数就可以解决这个问题。</p>
+<p>无法确认究竟是键对应的值为 nil，还是这个键在映射表中根本就不存在。contains?函数就可以解决这个问题。（<code>(:z the-map 26)</code>  这种形式也可以做到。）</p>
 <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> score &#123;<span class="symbol">:stu</span> <span class="literal">nil</span> <span class="symbol">:joey</span> <span class="number">100</span>&#125;)</span><br><span class="line">(<span class="name"><span class="builtin-name">contains?</span></span> score <span class="symbol">:stu</span>)</span><br><span class="line"><span class="comment">;-&gt; true</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="8-Set"><a href="#8-Set" class="headerlink" title="8. Set"></a>8. Set</h3><blockquote>
@@ -849,9 +849,118 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 10
+        Total : 21
         </div>
         <!-- search  -->
         
@@ -864,6 +973,61 @@ top:40vh;
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >[Leetcode单排] 划分为k个相等的子集 (N698)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-01矩阵-N542/" >[Leetcode单排] 01矩阵 (N542)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >[Leetcode单排] 运算表达式设优先级求值 (N241)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-分割回文串-N131/" >[Leetcode单排] 分割回文串 (N131)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" >[Leetcode单排] 复原IP地址 (N93)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-3-Lock/" >[Java并发札记] 3.Lock</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-1-并发概念与Java内存模型/" >[Java并发札记] 1. 并发概念与Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2019/08/01/Leetcode单排-单词接龙-N127/" >[Leetcode单排] 单词接龙 (N127)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span><a class="archive-post-title" href= "/2019/07/31/Clojure-in-Action-Clojure-构件/" >Clojure in Action: Clojure 构件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >[Leetcode单排] 单词搜索 (N79 N212)</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -922,7 +1086,7 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
     
-        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+        <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
     
         <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
     
@@ -932,9 +1096,13 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
     
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
         <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
     
         <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -971,9 +1139,11 @@ jsonContent:
     
         <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
     
-        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+        <span class="sidebar-category-name" data-categories="concurrent"><span class="iconfont-archer">&#xe60a;</span>concurrent</span>
     
         <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>

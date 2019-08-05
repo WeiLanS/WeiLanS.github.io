@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Clojure in Action: Clojure 构件 · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Clojure in Action: Clojure 构件</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/42/wallhaven-42oxk6.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Clojure in Action: Clojure 构件
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "clojure">clojure</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">1.9k</span>阅读时长: <span class="post-count reading-time">8 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/07/31</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="元数据"><a href="#元数据" class="headerlink" title="元数据"></a>元数据</h1><p>元数据提供了在必要时为值添加标识的 一种手段。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> untrusted (<span class="name"><span class="builtin-name">with-meta</span></span> &#123;<span class="symbol">:command</span> <span class="string">"delete-table"</span> <span class="symbol">:subject</span> <span class="string">"users"</span>&#125;</span><br><span class="line">                          &#123;<span class="symbol">:safe</span> <span class="literal">false</span> <span class="symbol">:io</span> <span class="literal">true</span>&#125;))</span><br><span class="line"></span><br><span class="line"><span class="comment">; 可以使用读取器宏^&#123;&#125;简化元数据定义</span></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> untrusted <span class="comment">^&#123;:safe false :io true&#125;</span> &#123;<span class="symbol">:command</span> <span class="string">"delete-table"</span></span><br><span class="line">                                        <span class="symbol">:subject</span> <span class="string">"users"</span>&#125;)</span><br><span class="line">untrusted</span><br><span class="line"><span class="comment">;=&gt; &#123;:command "delete-table", :subject "users"&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;检查与值关联的元数据，可以使用meta函数</span></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> untrusted)</span><br><span class="line"><span class="comment">;=&gt; &#123;:safe false, :io true&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;元数据不影响值的相等性。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> trusted &#123;<span class="symbol">:command</span> <span class="string">"delete-table"</span> <span class="symbol">:subject</span> <span class="string">"users"</span>&#125;) </span><br><span class="line">(<span class="name"><span class="builtin-name">=</span></span> trusted untrusted)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;元数据在读取时可以加入，而不可以在求值时加入。下列程序将元数据与以hash-map开头的列表关联，而不是与函数调用产生的哈希映射关联，所以这个元数据在运行时不可见。</span></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> untrusted2 <span class="comment">^&#123;:safe false :io true&#125;</span> (<span class="name"><span class="builtin-name">hash-map</span></span> <span class="symbol">:command</span> <span class="string">"delete-table"</span></span><br><span class="line">                                                 <span class="symbol">:subject</span> <span class="string">"users"</span>))</span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> untrusted2)</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; 从有元数据的新值中创建新值时，元数据被复制到新数据里</span></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> still-untrusted (<span class="name"><span class="builtin-name">assoc</span></span> untrusted <span class="symbol">:complete?</span> <span class="literal">false</span>))</span><br><span class="line">still-untrusted</span><br><span class="line"><span class="comment">;=&gt; &#123;:complete? false, :command "delete-table", :subject "users"&#125;</span></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> still-untrusted)</span><br><span class="line"><span class="comment">;=&gt; &#123;:safe false, :io true&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>函数与宏也可以在定义中包含元数据。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> <span class="comment">^&#123;:safe true :console true</span></span><br><span class="line"><span class="comment">        :doc "testing metadata for functions"&#125;</span></span><br><span class="line">  testing-meta</span><br><span class="line">  []</span><br><span class="line">  (<span class="name">println</span> <span class="string">"Hello from meta!"</span>))</span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> testing-meta)</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> (<span class="name"><span class="builtin-name">var</span></span> testing-meta))</span><br><span class="line"><span class="comment">;=&gt; &#123;:ns #&lt;Namespace user&gt;,</span></span><br><span class="line"><span class="comment">;    :name testing-meta,</span></span><br><span class="line"><span class="comment">;    :file "NO_SOURCE_FILE",</span></span><br><span class="line"><span class="comment">;    :line 1, :arglists ([]),</span></span><br><span class="line"><span class="comment">;    :console true,</span></span><br><span class="line"><span class="comment">;    :safe true,</span></span><br><span class="line"><span class="comment">;    :doc "testing metadata for functions"&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Java-类型提示"><a href="#Java-类型提示" class="headerlink" title="Java 类型提示"></a>Java 类型提示</h2><p>调用Java方法时，需要通过类找到方法的实现。但是，Clojure 是动态语言，变量类型只有在运行时才知道。可以使用读取器宏<code>^symbol</code></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">set!</span></span> *warn-on-reflection* <span class="literal">true</span>) <span class="comment">; Warn us when reflection is needed.</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> string-length [x] (<span class="name">.length</span> x))</span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name"><span class="builtin-name">reduce</span></span> + (<span class="name"><span class="builtin-name">map</span></span> string-length (<span class="name"><span class="builtin-name">repeat</span></span> <span class="number">10000</span> <span class="string">"12345"</span>))))</span><br><span class="line"><span class="comment">;"Elapsed time: 45.751 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 50000</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> fast-string-length [<span class="comment">^String</span> x] (<span class="name">.length</span> x)) <span class="comment">; No reflection warning.</span></span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name"><span class="builtin-name">reduce</span></span> + (<span class="name"><span class="builtin-name">map</span></span> fast-string-length (<span class="name"><span class="builtin-name">repeat</span></span> <span class="number">10000</span> <span class="string">"12345"</span>))))</span><br><span class="line"><span class="comment">;"Elapsed time: 5.788 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 50000</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> (<span class="name"><span class="builtin-name">first</span></span> (<span class="name"><span class="builtin-name">first</span></span> (<span class="symbol">:arglists</span> (<span class="name"><span class="builtin-name">meta</span></span> #'fast-string-length)))))</span><br><span class="line">=&gt; &#123;:tag String&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Clojure 编译器在类型推导上相当智能，所有核心函数已经在必要时做了类型提示，所以不经常需要采用类型提示。</p>
+<p>原始类型没有可读的类名可提供引用，Clojure 为所有原始类型和原始类型数组定义了别名：只需要使用<code>^byte</code>这样的类型提示表示原始类型，<code>^bytes</code>这样的复数形式表示原始类型数组。</p>
+<h1 id="Java-异常处理"><a href="#Java-异常处理" class="headerlink" title="Java 异常处理"></a>Java 异常处理</h1><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> average [numbers]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [total (<span class="name"><span class="builtin-name">apply</span></span> + numbers)]</span><br><span class="line">    (/ total (<span class="name"><span class="builtin-name">count</span></span> numbers))))</span><br><span class="line">(<span class="name">average</span> [])</span><br><span class="line"><span class="comment">;ArithmeticException Divide by zero  clojure.lang.Numbers.divide (Numbers.java:156)</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> safe-average [numbers]</span><br><span class="line">  (<span class="name"><span class="builtin-name">let</span></span> [total (<span class="name"><span class="builtin-name">apply</span></span> + numbers)]</span><br><span class="line">    (<span class="name"><span class="builtin-name">try</span></span></span><br><span class="line">      (/ total (<span class="name"><span class="builtin-name">count</span></span> numbers))</span><br><span class="line">      (<span class="name">catch</span> ArithmeticException e </span><br><span class="line">        (<span class="name">println</span> <span class="string">"Divided by zero!"</span>)</span><br><span class="line">        <span class="number">0</span>))))</span><br><span class="line">(<span class="name">safe-average</span> [])</span><br><span class="line"><span class="comment">;Divided by zero!</span></span><br><span class="line"><span class="comment">;=&gt; 0</span></span><br></pre></td></tr></table></figure>
+
+<p>如果有表达式产生异常，则 根据异常类型执行对应的 <code>catch</code>子句，返回该子句的值。可选的<code>finally</code>子句总会被执行，用于保证必须的副作用，但不返回任何数值。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">try</span></span></span><br><span class="line">  (<span class="name">print</span> <span class="string">"Attempting division... "</span>)</span><br><span class="line">  (/ <span class="number">1</span> <span class="number">0</span>)</span><br><span class="line">  (<span class="name">finally</span></span><br><span class="line">    (<span class="name">println</span> <span class="string">"done."</span>)))</span><br><span class="line">Attempting division... done.</span><br><span class="line"><span class="comment">;=&gt;Execution error (ArithmeticException) at user/eval1516 (form-init4016394056826807004.clj:3).Divide by zero</span></span><br></pre></td></tr></table></figure>
+
+<p>需要注意<code>catch</code>子句的顺序。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">try</span></span></span><br><span class="line">  (<span class="name">print</span> <span class="string">"Attempting division... "</span>)</span><br><span class="line">  (/ <span class="number">1</span> <span class="number">0</span>)</span><br><span class="line">  (<span class="name">catch</span> RuntimeException e <span class="string">"Runtime exception!"</span>)</span><br><span class="line">  (<span class="name">catch</span> ArithmeticException e <span class="string">"DIVIDE BY ZERO!"</span>)</span><br><span class="line">  (<span class="name">catch</span> Throwable e <span class="string">"Unknown exception encountered!"</span>)</span><br><span class="line">  (<span class="name">finally</span></span><br><span class="line">    (<span class="name">println</span> <span class="string">"done."</span>)))</span><br><span class="line"><span class="comment">;Attempting division... done.</span></span><br><span class="line"><span class="comment">;=&gt; "Runtime exception!"</span></span><br></pre></td></tr></table></figure>
+
+<p>异常可以使用<code>throw</code>形式抛出，在希望抛出的场合可以使用: <code>(throw (Exception. &quot;this is an error&quot;))</code>。</p>
+<h1 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h1><h2 id="先决和后置条件"><a href="#先决和后置条件" class="headerlink" title="先决和后置条件"></a>先决和后置条件</h2><p>在执行函数主体之前运行的检查由<code>:pre</code>指定，称为<code>先决条件</code>。<code>:post</code>键指定的条件称为<code>后置条件</code>，条件中的<code>%</code>指的就是函数的返回值。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> item-total [price quantity discount-percentage]</span><br><span class="line">  &#123;<span class="symbol">:pre</span> [(<span class="name"><span class="builtin-name">&gt;</span></span> price <span class="number">0</span>) (<span class="name"><span class="builtin-name">&gt;</span></span> quantity <span class="number">0</span>)]</span><br><span class="line">   <span class="symbol">:post</span> [(<span class="name"><span class="builtin-name">&gt;</span></span> % <span class="number">0</span>)]&#125;</span><br><span class="line">  (<span class="name"><span class="builtin-name">-&gt;&gt;</span></span> (/ discount-percentage <span class="number">100</span>)</span><br><span class="line">       (<span class="name"><span class="builtin-name">-</span></span> <span class="number">1</span>)</span><br><span class="line">       (<span class="name"><span class="builtin-name">*</span></span> price quantity)</span><br><span class="line">       float))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">(<span class="name">item-total</span> <span class="number">100</span> <span class="number">2</span> <span class="number">0</span>)</span><br><span class="line"><span class="comment">;=&gt; 200.0</span></span><br><span class="line">(<span class="name">item-total</span> <span class="number">100</span> <span class="number">2</span> <span class="number">10</span>)</span><br><span class="line"><span class="comment">;=&gt; 180.0</span></span><br><span class="line"></span><br><span class="line">(<span class="name">item-total</span> <span class="number">100</span> <span class="number">-2</span> <span class="number">10</span>)</span><br><span class="line"><span class="comment">;Execution error (AssertionError) at user/item-total (form-init4016394056826807004.clj:1).</span></span><br><span class="line"><span class="comment">;Assert failed: (&gt; quantity 0)</span></span><br><span class="line">(<span class="name">item-total</span> <span class="number">100</span> <span class="number">2</span> <span class="number">110</span>)</span><br><span class="line"><span class="comment">;Execution error (AssertionError) at user/item-total (form-init4016394056826807004.clj:1).</span></span><br><span class="line"><span class="comment">;Assert failed: (&gt; % 0)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="重载（多种参数数量）"><a href="#重载（多种参数数量）" class="headerlink" title="重载（多种参数数量）"></a>重载（多种参数数量）</h2><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> total-cost</span><br><span class="line">  ([item-cost number-of-items]</span><br><span class="line">   (<span class="name"><span class="builtin-name">*</span></span> item-cost number-of-items))</span><br><span class="line">  ([item-cost]</span><br><span class="line">   (<span class="name">total-cost</span> item-cost <span class="number">1</span>)))</span><br></pre></td></tr></table></figure>
+
+<p>可以从某种参数数量的函数中调用其他参数数量的版本。</p>
+<h2 id="可变参数函数"><a href="#可变参数函数" class="headerlink" title="可变参数函数"></a>可变参数函数</h2><p>在 Clojure 中使用<code>&amp;</code>符号实现变长参数功能。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> total-all-numbers [&amp; numbers]</span><br><span class="line">  (<span class="name"><span class="builtin-name">apply</span></span> + numbers))</span><br></pre></td></tr></table></figure>
+
+<p>可变参数函数中有一些不可变的参数。可变参数中的必要参数数量至少要与最长的固定参数相同。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> many-arities</span><br><span class="line">  ([]             <span class="number">0</span>)</span><br><span class="line">  ([a]            <span class="number">1</span>)</span><br><span class="line">  ([a b c]        <span class="number">3</span>)</span><br><span class="line">  ([a b c &amp; more] <span class="string">"variadic"</span>))</span><br><span class="line"></span><br><span class="line">(<span class="name">many-arities</span>)</span><br><span class="line"><span class="comment">;=&gt; 0</span></span><br><span class="line">(<span class="name">many-arities</span> <span class="string">"one argument"</span>)</span><br><span class="line"><span class="comment">;=&gt; 1</span></span><br><span class="line">(<span class="name">many-arities</span> <span class="string">"two"</span> <span class="string">"arguments"</span>)</span><br><span class="line"><span class="comment">;Execution error (ArityException) at user/eval1554 (form-init4016394056826807004.clj:11).</span></span><br><span class="line"><span class="comment">;Wrong number of args (2) passed to: user/many-arities</span></span><br><span class="line">(<span class="name">many-arities</span> <span class="string">"three"</span> <span class="string">"argu-"</span> <span class="string">"ments"</span>)</span><br><span class="line"><span class="comment">;=&gt; 3</span></span><br><span class="line">(<span class="name">many-arities</span> <span class="string">"many"</span> <span class="string">"more"</span> <span class="string">"argu-"</span> <span class="string">"ments"</span>)</span><br><span class="line"><span class="comment">;=&gt; "variadic"</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="高阶参数"><a href="#高阶参数" class="headerlink" title="高阶参数"></a>高阶参数</h2><h3 id="every"><a href="#every" class="headerlink" title="every?"></a>every?</h3><p>接受一个返回布尔值的函数（判定函数）和一个序列</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> bools [<span class="literal">true</span> <span class="literal">true</span> <span class="literal">true</span> <span class="literal">false</span> <span class="literal">false</span>])</span><br><span class="line">(<span class="name">every?</span> <span class="literal">true</span>? bools) </span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line">(<span class="name">every?</span> even? '(<span class="number">2</span> <span class="number">4</span> <span class="number">6</span>))</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="some"><a href="#some" class="headerlink" title="some"></a>some</h3><p>接受一个判定和一个序列，返回获得的第一个逻辑true值，如果调用都不返回逻辑 true，则返回 nil。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">some</span> (<span class="name"><span class="builtin-name">fn</span></span> [p] (<span class="name"><span class="builtin-name">=</span></span> <span class="string">"rob"</span> p)) [<span class="string">"kyle"</span> <span class="string">"siva"</span> <span class="string">"rob"</span> <span class="string">"celeste"</span>])</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="constantly"><a href="#constantly" class="headerlink" title="constantly"></a>constantly</h3><p>接受一个值 v，返回一个可变参数函数，这个函数不管输入的参数为何，总是返回相同的值 v。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> two (<span class="name"><span class="builtin-name">constantly</span></span> <span class="number">2</span>)) <span class="comment">; same as </span></span><br><span class="line"><span class="comment">;(def two (fn [&amp; more] 2))</span></span><br><span class="line"><span class="comment">;(defn two [&amp; more] 2)</span></span><br><span class="line"><span class="comment">;=&gt; #'clj-in-act.ch3/two</span></span><br><span class="line">(<span class="name">two</span> <span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; 2</span></span><br><span class="line">(<span class="name">two</span> <span class="symbol">:a</span> <span class="symbol">:b</span> <span class="symbol">:c</span>)</span><br><span class="line"><span class="comment">;=&gt; 2</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="complement"><a href="#complement" class="headerlink" title="complement"></a>complement</h3><p>接受一个函数作为参数，返回与原始函数参数数量相同、完成相同工作但返回逻辑相反值的函数。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> greater? [x y]</span><br><span class="line">  (<span class="name"><span class="builtin-name">&gt;</span></span> x y))</span><br><span class="line">(<span class="name">greater?</span> <span class="number">10</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br><span class="line">(<span class="name">greater?</span> <span class="number">10</span> <span class="number">20</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> smaller? (<span class="name"><span class="builtin-name">complement</span></span> greater?))</span><br><span class="line">(<span class="name">smaller?</span> <span class="number">10</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; false</span></span><br><span class="line">(<span class="name">smaller?</span> <span class="number">10</span> <span class="number">20</span>)</span><br><span class="line"><span class="comment">;=&gt; true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="comp"><a href="#comp" class="headerlink" title="comp"></a>comp</h3><p>接受多个函数并返回由哪些函数组合而成的新函数。计算从右到左进行，新函数将其参数应用于原始组成函数中最右侧的一个，然后将结果应用到它左边的函数，直到所有函数都被调用。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">def</span></span> opp-zero-str (<span class="name"><span class="builtin-name">comp</span></span> str not zero?))</span><br><span class="line"><span class="comment">; (defn opp-zero-str [x] (str (not (zero? x))))</span></span><br><span class="line"></span><br><span class="line">(<span class="name">opp-zero-str</span> <span class="number">0</span>)</span><br><span class="line"><span class="comment">;=&gt; "false"</span></span><br><span class="line">(<span class="name">opp-zero-str</span> <span class="number">1</span>)</span><br><span class="line"><span class="comment">;=&gt; "true"</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="partial"><a href="#partial" class="headerlink" title="partial"></a>partial</h3><p>接受函数 f 以及 f 的几个参数，然后<code>partial</code>返回一个新函数，接受 f 的其余参数。当以余下的参数调用新函数时，它以全部参数调用原始函数 f。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> above-threshold? [threshold number]</span><br><span class="line">  (<span class="name"><span class="builtin-name">&gt;</span></span> number threshold))</span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">filter</span></span> (<span class="name"><span class="builtin-name">fn</span></span> [x] (<span class="name">above-threshold?</span> <span class="number">5</span> x)) [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span> <span class="number">7</span> <span class="number">8</span> <span class="number">9</span>])</span><br><span class="line"><span class="comment">;=&gt; (6 7 8 9)</span></span><br><span class="line">(<span class="name"><span class="builtin-name">filter</span></span> (<span class="name"><span class="builtin-name">partial</span></span> above-threshold? <span class="number">5</span>) [<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span> <span class="number">7</span> <span class="number">8</span> <span class="number">9</span>])</span><br><span class="line"><span class="comment">;=&gt; (6 7 8 9)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="memoize"><a href="#memoize" class="headerlink" title="memoize"></a>memoize</h3><p>内存化可以避免函数为已处理过的参数计算结果。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> slow-calc [n m]</span><br><span class="line">  (<span class="name">Thread/sleep</span> <span class="number">1000</span>)</span><br><span class="line">  (<span class="name"><span class="builtin-name">*</span></span> n m))</span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name">slow-calc</span> <span class="number">5</span> <span class="number">7</span>))</span><br><span class="line"><span class="comment">;"Elapsed time: 1000.097 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 35</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">def</span></span> fast-calc (<span class="name"><span class="builtin-name">memoize</span></span> slow-calc))</span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name">fast-calc</span> <span class="number">5</span> <span class="number">7</span>))</span><br><span class="line"><span class="comment">;"Elapsed time: 1002.446198 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 35</span></span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name">fast-calc</span> <span class="number">5</span> <span class="number">7</span>))</span><br><span class="line"><span class="comment">;"Elapsed time: 0.089624 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 35</span></span><br></pre></td></tr></table></figure>
+
+<p>注意：<code>memoize</code>缓存没有限定大小，因而会不停缓存输入和结果。因此该函数只应该用于少量可能输入的函数，否则最终会把内存耗尽。更高级的内存化功能，可以使用<code>clojure.core.memoize</code>库。</p>
+<h2 id="匿名函数"><a href="#匿名函数" class="headerlink" title="匿名函数"></a>匿名函数</h2><p>匿名函数使用<code>fn</code>创建。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> sorter-using [ordering-fn]</span><br><span class="line">  (<span class="name"><span class="builtin-name">fn</span></span> [collection]</span><br><span class="line">    (<span class="name"><span class="builtin-name">sort-by</span></span> ordering-fn collection)))</span><br></pre></td></tr></table></figure>
+
+<p>同时可以使用<code>#()</code>创建一个匿名函数。<code>%</code>表示一个参数，如果超过一个参数，则可以使用<code>%1</code>、<code>%2</code>…还可以使用<code>%&amp;</code>表示除明确引用的<code>%&amp;</code>参数之外的参数。</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">#</span>(<span class="name"><span class="builtin-name">vector</span></span> %&amp;) <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; [(1 2 3 4 5)]</span></span><br><span class="line">(<span class="name">#</span>(<span class="name"><span class="builtin-name">vector</span></span> % %&amp;) <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; [1 (2 3 4 5)]</span></span><br><span class="line">(<span class="name">#</span>(<span class="name"><span class="builtin-name">vector</span></span> %<span class="number">1</span> %<span class="number">2</span> %&amp;) <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>)</span><br><span class="line"><span class="comment">;=&gt; [1 2 (3 4 5)]</span></span><br><span class="line">(<span class="name">#</span>(<span class="name"><span class="builtin-name">vector</span></span> %<span class="number">1</span> %<span class="number">2</span> %&amp;) <span class="number">1</span> <span class="number">2</span>)</span><br><span class="line"><span class="comment">;=&gt; [1 2 nil]</span></span><br></pre></td></tr></table></figure>
+
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2019/08/01/Leetcode单排-单词接龙-N127/" title= "[Leetcode单排] 单词接龙 (N127)">
+                    <div class="nextTitle">[Leetcode单排] 单词接龙 (N127)</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" title= "[Leetcode单排] 单词搜索 (N79 N212)">
+                    <div class="prevTitle">[Leetcode单排] 单词搜索 (N79 N212)</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#元数据"><span class="toc-number">1.</span> <span class="toc-text">元数据</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-类型提示"><span class="toc-number">1.1.</span> <span class="toc-text">Java 类型提示</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Java-异常处理"><span class="toc-number">2.</span> <span class="toc-text">Java 异常处理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#函数"><span class="toc-number">3.</span> <span class="toc-text">函数</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#先决和后置条件"><span class="toc-number">3.1.</span> <span class="toc-text">先决和后置条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载（多种参数数量）"><span class="toc-number">3.2.</span> <span class="toc-text">重载（多种参数数量）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可变参数函数"><span class="toc-number">3.3.</span> <span class="toc-text">可变参数函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#高阶参数"><span class="toc-number">3.4.</span> <span class="toc-text">高阶参数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#every"><span class="toc-number">3.4.1.</span> <span class="toc-text">every?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#some"><span class="toc-number">3.4.2.</span> <span class="toc-text">some</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#constantly"><span class="toc-number">3.4.3.</span> <span class="toc-text">constantly</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#complement"><span class="toc-number">3.4.4.</span> <span class="toc-text">complement</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#comp"><span class="toc-number">3.4.5.</span> <span class="toc-text">comp</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#partial"><span class="toc-number">3.4.6.</span> <span class="toc-text">partial</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#memoize"><span class="toc-number">3.4.7.</span> <span class="toc-text">memoize</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#匿名函数"><span class="toc-number">3.5.</span> <span class="toc-text">匿名函数</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 21
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >[Leetcode单排] 划分为k个相等的子集 (N698)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-01矩阵-N542/" >[Leetcode单排] 01矩阵 (N542)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >[Leetcode单排] 运算表达式设优先级求值 (N241)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-分割回文串-N131/" >[Leetcode单排] 分割回文串 (N131)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" >[Leetcode单排] 复原IP地址 (N93)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-3-Lock/" >[Java并发札记] 3.Lock</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-1-并发概念与Java内存模型/" >[Java并发札记] 1. 并发概念与Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2019/08/01/Leetcode单排-单词接龙-N127/" >[Leetcode单排] 单词接龙 (N127)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span><a class="archive-post-title" href= "/2019/07/31/Clojure-in-Action-Clojure-构件/" >Clojure in Action: Clojure 构件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >[Leetcode单排] 单词搜索 (N79 N212)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="concurrent"><span class="iconfont-archer">&#xe60a;</span>concurrent</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
