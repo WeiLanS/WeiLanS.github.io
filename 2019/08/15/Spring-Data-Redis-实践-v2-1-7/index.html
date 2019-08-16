@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Spring Data Redis 实践 (v2.1.7) · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Spring Data Redis 实践 (v2.1.7)</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/42/wallhaven-42oxk6.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Spring Data Redis 实践 (v2.1.7)
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "cache">cache</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "spring">spring</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "redis">redis</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">1.2k</span>阅读时长: <span class="post-count reading-time">5 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/08/15</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>最近重写一个项目，在 SpringBoot 用的是最新的 GA 版本 2.1.7，缓存层使用了 Spring Data Redis。其实使用它是因为上一个项目也是用的这个框架，了解的程度还行，但不算细致。此外，因为以前直接使用 <code>Redisson</code> 的时候出现了内存泄漏（实际上也不是人家的锅，算是依赖的 Netty 版本的 bug），对 Redisson 总会心有余悸。但我真的得承认，Redisson 非常好用，如果项目中需要使用一些分布式的 API，比如分布式锁、优先级阻塞队列等，Redisson 是不二之选。其实与Redisson 做横向对比的应该是 Jedis，Spring Data Redis 是在 Jedis 上架了一层（boot 1.x）。但是这个项目对 Redis 的API 操作比较简单，所以就当仔细学习一下 Spring Data Redis了。</p>
+<h1 id="POM"><a href="#POM" class="headerlink" title="POM"></a>POM</h1><p>因为 Boot 版本升了 2.X，Spring Data Redis 的默认框架从 <code>Jedis</code> 换成了 <code>Lettuce</code>，后者主要突出基于 Netty 的事件驱动，容易发挥异步优势。但是由于真不了解以及学习成本的考量，还是使用了 Jedis。</p>
+<p>POM文件中需移除 lettuce 的依赖，引入 Jedis。具体版本在 <code>2.1.7.RELEASE</code> 的 <code>spring-boot-dependencies</code> 文件中（lettuce 版本 5.1.8.RELEASE，jedis 版本 2.9.3）。    </p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-data-redis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.lettuce<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lettuce-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>redis.clients<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jedis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Config"><a href="#Config" class="headerlink" title="Config"></a>Config</h1><h2 id="RedisConnectionFactory"><a href="#RedisConnectionFactory" class="headerlink" title="RedisConnectionFactory"></a>RedisConnectionFactory</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> RedisConnectionFactory <span class="title">redisConnectionFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    redisConf = ...;</span><br><span class="line">    RedisStandaloneConfiguration standaloneConf = <span class="keyword">new</span> RedisStandaloneConfiguration(</span><br><span class="line">            redisConf.getHost(), redisConf.getPort());</span><br><span class="line">    <span class="keyword">if</span> (!Strings.isNullOrEmpty(redisConf.getPassword())) &#123;</span><br><span class="line">        standaloneConf.setPassword(redisConf.getPassword());</span><br><span class="line">    &#125;</span><br><span class="line">    JedisConnectionFactory jedisConnectionFactory = <span class="keyword">new</span> JedisConnectionFactory(standaloneConf);</span><br><span class="line">    GenericObjectPoolConfig poolConfig = jedisConnectionFactory.getPoolConfig();</span><br><span class="line">    poolConfig.setMaxTotal(<span class="number">30</span>);</span><br><span class="line">    poolConfig.setMinIdle(<span class="number">0</span>);</span><br><span class="line">    poolConfig.setMaxIdle(<span class="number">10</span>);</span><br><span class="line">    poolConfig.setMaxWaitMillis(<span class="number">3000</span>);</span><br><span class="line">    <span class="keyword">return</span> jedisConnectionFactory;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>2.x 的配置也和之前有所区别，<code>JedisConnectionFactory</code>的<code>setXxx</code>方法大多已是 Deprecated，如：<code>setHostName</code>、<code>setPort</code>、<code>setPassword</code>等。文档的提示内容是：</p>
+<blockquote>
+<p>since 2.0, configure the password using {@link RedisStandaloneConfiguration}, {@link RedisSentinelConfiguration} or {@link RedisClusterConfiguration}.</p>
+</blockquote>
+<p>所以，在 JedisConnectionFactory 构造参数中设置<code>RedisStandaloneConfiguration</code>。而 pool 信息可以从 factory 中获取，从而进行设置。从 JedisConnectionFactory 构造函数中，我们发现它构造了<code>MutableJedisClientConfiguration</code>对象。该对象的 poolConfig 在 变量声名中就 new 出了<code>JedisPoolConfig</code>，我们可以对这个对象进行连接池设置。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">JedisConnectionFactory</span><span class="params">(RedisStandaloneConfiguration standaloneConfig)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">this</span>(standaloneConfig, <span class="keyword">new</span> MutableJedisClientConfiguration());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然设置 pool 信息不单只有这一种，<code>MutableJedisClientConfiguration</code>是<code>JedisClientConfiguration</code>接口的实现类，该接口下面还有接口<code>JedisPoolingClientConfigurationBuilder</code>，也可以使用它的实现类<code>DefaultJedisClientConfigurationBuilder</code>，<code>JedisClientConfiguration.builder()</code>返回的就是这个类实例。</p>
+<p>感觉到了 2.x，手动建 Factory 配置有点麻烦啊…</p>
+<h2 id="RedisTemplate"><a href="#RedisTemplate" class="headerlink" title="RedisTemplate"></a>RedisTemplate</h2><p>RedisTemplate 的 配置比较简单，注入 RedisConnectionFactory Bean 对象即可，但是要注意的序列化方案。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> RedisTemplate&lt;String, Object&gt; <span class="title">redisTemplate</span><span class="params">(RedisConnectionFactory factory)</span> </span>&#123;</span><br><span class="line">    RedisTemplate&lt;String, Object&gt; redisTemplate = <span class="keyword">new</span> RedisTemplate&lt;&gt;();</span><br><span class="line">    redisTemplate.setConnectionFactory(factory);</span><br><span class="line">    setSerializer(redisTemplate);</span><br><span class="line">    redisTemplate.afterPropertiesSet();</span><br><span class="line">    <span class="keyword">return</span> redisTemplate;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setSerializer</span><span class="params">(RedisTemplate&lt;String, Object&gt; template)</span> </span>&#123;</span><br><span class="line">    GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer =</span><br><span class="line">            <span class="keyword">new</span> GenericJackson2JsonRedisSerializer();</span><br><span class="line">    template.setKeySerializer(<span class="keyword">new</span> StringRedisSerializer());</span><br><span class="line">    template.setValueSerializer(genericJackson2JsonRedisSerializer);</span><br><span class="line">    template.setHashKeySerializer(<span class="keyword">new</span> StringRedisSerializer());</span><br><span class="line">    template.setHashValueSerializer(genericJackson2JsonRedisSerializer);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>redisTemplate.afterPropertiesSet()</code>方法中，显示默认的序列化方式是<code>JdkSerializationRedisSerializer</code>。使用的是 JDK 序列化方式，数据以字节流的形式存储。这种方式会造成可读性很差。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (defaultSerializer == <span class="keyword">null</span>) &#123;</span><br><span class="line"></span><br><span class="line">   defaultSerializer = <span class="keyword">new</span> JdkSerializationRedisSerializer(</span><br><span class="line">         classLoader != <span class="keyword">null</span> ? classLoader : <span class="keyword">this</span>.getClass().getClassLoader());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (enableDefaultSerializer) &#123;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (keySerializer == <span class="keyword">null</span>) &#123;</span><br><span class="line">      keySerializer = defaultSerializer;</span><br><span class="line">      defaultUsed = <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span> (valueSerializer == <span class="keyword">null</span>) &#123;</span><br><span class="line">      valueSerializer = defaultSerializer;</span><br><span class="line">      defaultUsed = <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span> (hashKeySerializer == <span class="keyword">null</span>) &#123;</span><br><span class="line">      hashKeySerializer = defaultSerializer;</span><br><span class="line">      defaultUsed = <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span> (hashValueSerializer == <span class="keyword">null</span>) &#123;</span><br><span class="line">      hashValueSerializer = defaultSerializer;</span><br><span class="line">      defaultUsed = <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果项目中 key value 都只要使用字符串即可的话，<code>StringRedisSerializer</code>也是一种选项。这里我使用的是 Jackson 方式进行序列化操作。我事先使用的是<code>Jackson2JsonRedisSerializer</code>方式，该方式会将对象完全展为 JSON，但是在反序列的过程中报错：<code>LinkedHashMap cannot be cast to ...</code>，所以改成了<code>GenericJackson2JsonRedisSerializer</code>，该方案会在 JSON 中添加 <code>@class</code>类信息 field，这样在处理集合类泛型信息时，都能够正确处理。</p>
+<p>使用 GenericJackson2JsonRedisSerializer 的时候，一开始是使用了自己定义的 ObjectMapper，结果发现无用，后来选择了无参构造器的实现才不出错。究其原因不难发现，该构造器中会对 objectMapper 设置 <code>enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL)</code>，正是该字段使 Jackson 生成了类信息字段，这才是允许反序列化的基础。而类的前面出现 @class 是因为 NullValueSerializer 里 设置了classIdentifier 为 @class（即 JsonTypeInfo.Id#CLASS）。</p>
+<p>如果使用 Jackson2JsonRedisSerializer 时里面的 objectMapper 配置了 DefaultTyping.NON_FINAL，简单试验了一下发现序列化/反序列化操作会成功（没配 @class 前缀也是可以的）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">GenericJackson2JsonRedisSerializer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="keyword">this</span>((String) <span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">GenericJackson2JsonRedisSerializer</span><span class="params">(@Nullable String classPropertyTypeName)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">this</span>(<span class="keyword">new</span> ObjectMapper());</span><br><span class="line"></span><br><span class="line">   mapper.registerModule(<span class="keyword">new</span> SimpleModule().addSerializer(<span class="keyword">new</span> NullValueSerializer(classPropertyTypeName)));</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (StringUtils.hasText(classPropertyTypeName)) &#123;</span><br><span class="line">      mapper.enableDefaultTypingAsProperty(DefaultTyping.NON_FINAL, classPropertyTypeName);</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      mapper.enableDefaultTyping(DefaultTyping.NON_FINAL, As.PROPERTY);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>感觉一个完整 JSON 工具包的实现还是很难的，有机会可以详细过一遍 Jackson…</p>
+<hr>
+<p><a href="https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/" target="_blank" rel="noopener">官方 Reference</a></p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" title= "[Leetcode单排] 二叉树的序列化与反序列化 (N297)">
+                    <div class="prevTitle">[Leetcode单排] 二叉树的序列化与反序列化 (N297)</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#POM"><span class="toc-number">1.</span> <span class="toc-text">POM</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Config"><span class="toc-number">2.</span> <span class="toc-text">Config</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#RedisConnectionFactory"><span class="toc-number">2.1.</span> <span class="toc-text">RedisConnectionFactory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RedisTemplate"><span class="toc-number">2.2.</span> <span class="toc-text">RedisTemplate</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#序列化"><span class="toc-number">2.3.</span> <span class="toc-text">序列化</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 27
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" >Spring Data Redis 实践 (v2.1.7)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" >[Leetcode单排] 二叉树的序列化与反序列化 (N297)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/11</span><a class="archive-post-title" href= "/2019/08/11/初识Disruptor/" >初识Disruptor</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2019/08/10/Leetcode单排- 树类题目集合1-N102-N107-N429-N872-N112-N113/" >[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树相关Easy题-N100-N101-N104-N110-N111-N572-N965/" >[Leetcode单排] 树相关Easy题 (N100 N101 N104 N110 N111 N572 N965)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >[Leetcode单排] 树的遍历 (N94 N589 N590)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >[Leetcode单排] 划分为k个相等的子集 (N698)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-01矩阵-N542/" >[Leetcode单排] 01矩阵 (N542)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >[Leetcode单排] 运算表达式设优先级求值 (N241)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-分割回文串-N131/" >[Leetcode单排] 分割回文串 (N131)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" >[Leetcode单排] 复原IP地址 (N93)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-3-Lock/" >[Java并发札记] 3.Lock</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-1-并发概念与Java内存模型/" >[Java并发札记] 1. 并发概念与Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2019/08/01/Leetcode单排-单词接龙-N127/" >[Leetcode单排] 单词接龙 (N127)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span><a class="archive-post-title" href= "/2019/07/31/Clojure-in-Action-Clojure-构件/" >Clojure in Action: Clojure 构件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >[Leetcode单排] 单词搜索 (N79 N212)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+        <span class="sidebar-tag-name" data-tags="cache"><span class="iconfont-archer">&#xe606;</span>cache</span>
+    
+        <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="queue"><span class="iconfont-archer">&#xe606;</span>queue</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="concurrent"><span class="iconfont-archer">&#xe60a;</span>concurrent</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

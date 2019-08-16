@@ -403,7 +403,7 @@ height:40vh;
 <figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> <span class="comment">^&#123;:safe true :console true</span></span><br><span class="line"><span class="comment">        :doc "testing metadata for functions"&#125;</span></span><br><span class="line">  testing-meta</span><br><span class="line">  []</span><br><span class="line">  (<span class="name">println</span> <span class="string">"Hello from meta!"</span>))</span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> testing-meta)</span><br><span class="line"><span class="comment">;=&gt; nil</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> (<span class="name"><span class="builtin-name">var</span></span> testing-meta))</span><br><span class="line"><span class="comment">;=&gt; &#123;:ns #&lt;Namespace user&gt;,</span></span><br><span class="line"><span class="comment">;    :name testing-meta,</span></span><br><span class="line"><span class="comment">;    :file "NO_SOURCE_FILE",</span></span><br><span class="line"><span class="comment">;    :line 1, :arglists ([]),</span></span><br><span class="line"><span class="comment">;    :console true,</span></span><br><span class="line"><span class="comment">;    :safe true,</span></span><br><span class="line"><span class="comment">;    :doc "testing metadata for functions"&#125;</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="Java-类型提示"><a href="#Java-类型提示" class="headerlink" title="Java 类型提示"></a>Java 类型提示</h2><p>调用Java方法时，需要通过类找到方法的实现。但是，Clojure 是动态语言，变量类型只有在运行时才知道。可以使用读取器宏<code>^symbol</code></p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">set!</span></span> *warn-on-reflection* <span class="literal">true</span>) <span class="comment">; Warn us when reflection is needed.</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> string-length [x] (<span class="name">.length</span> x))</span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name"><span class="builtin-name">reduce</span></span> + (<span class="name"><span class="builtin-name">map</span></span> string-length (<span class="name"><span class="builtin-name">repeat</span></span> <span class="number">10000</span> <span class="string">"12345"</span>))))</span><br><span class="line"><span class="comment">;"Elapsed time: 45.751 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 50000</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> fast-string-length [<span class="comment">^String</span> x] (<span class="name">.length</span> x)) <span class="comment">; No reflection warning.</span></span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name"><span class="builtin-name">reduce</span></span> + (<span class="name"><span class="builtin-name">map</span></span> fast-string-length (<span class="name"><span class="builtin-name">repeat</span></span> <span class="number">10000</span> <span class="string">"12345"</span>))))</span><br><span class="line"><span class="comment">;"Elapsed time: 5.788 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 50000</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> (<span class="name"><span class="builtin-name">first</span></span> (<span class="name"><span class="builtin-name">first</span></span> (<span class="symbol">:arglists</span> (<span class="name"><span class="builtin-name">meta</span></span> #'fast-string-length)))))</span><br><span class="line">=&gt; &#123;:tag String&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">set!</span></span> *warn-on-reflection* <span class="literal">true</span>) <span class="comment">; Warn us when reflection is needed.</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> string-length [x] (<span class="name">.length</span> x))</span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name"><span class="builtin-name">reduce</span></span> + (<span class="name"><span class="builtin-name">map</span></span> string-length (<span class="name"><span class="builtin-name">repeat</span></span> <span class="number">10000</span> <span class="string">"12345"</span>))))</span><br><span class="line"><span class="comment">;Reflection warning</span></span><br><span class="line"><span class="comment">;"Elapsed time: 45.751 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 50000</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">defn</span></span> fast-string-length [<span class="comment">^String</span> x] (<span class="name">.length</span> x)) <span class="comment">; No reflection warning.</span></span><br><span class="line">(<span class="name"><span class="builtin-name">time</span></span> (<span class="name"><span class="builtin-name">reduce</span></span> + (<span class="name"><span class="builtin-name">map</span></span> fast-string-length (<span class="name"><span class="builtin-name">repeat</span></span> <span class="number">10000</span> <span class="string">"12345"</span>))))</span><br><span class="line"><span class="comment">;"Elapsed time: 5.788 msecs"</span></span><br><span class="line"><span class="comment">;=&gt; 50000</span></span><br><span class="line"></span><br><span class="line">(<span class="name"><span class="builtin-name">meta</span></span> (<span class="name"><span class="builtin-name">first</span></span> (<span class="name"><span class="builtin-name">first</span></span> (<span class="symbol">:arglists</span> (<span class="name"><span class="builtin-name">meta</span></span> #'fast-string-length)))))</span><br><span class="line">=&gt; &#123;:tag String&#125;</span><br></pre></td></tr></table></figure>
 
 <p>Clojure 编译器在类型推导上相当智能，所有核心函数已经在必要时做了类型提示，所以不经常需要采用类型提示。</p>
 <p>原始类型没有可读的类名可提供引用，Clojure 为所有原始类型和原始类型数组定义了别名：只需要使用<code>^byte</code>这样的类型提示表示原始类型，<code>^bytes</code>这样的复数形式表示原始类型数组。</p>
@@ -815,9 +815,115 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 21
+        Total : 27
         </div>
         <!-- search  -->
         
@@ -830,6 +936,36 @@ top:40vh;
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" >Spring Data Redis 实践 (v2.1.7)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" >[Leetcode单排] 二叉树的序列化与反序列化 (N297)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/11</span><a class="archive-post-title" href= "/2019/08/11/初识Disruptor/" >初识Disruptor</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2019/08/10/Leetcode单排- 树类题目集合1-N102-N107-N429-N872-N112-N113/" >[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树相关Easy题-N100-N101-N104-N110-N111-N572-N965/" >[Leetcode单排] 树相关Easy题 (N100 N101 N104 N110 N111 N572 N965)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >[Leetcode单排] 树的遍历 (N94 N589 N590)</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -858,12 +994,12 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-3-Lock/" >[Java并发札记] 3.Lock</a>
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-3-Lock/" >[Java并发札记] 3.Lock</a>
         </li>
     
     
@@ -945,6 +1081,10 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
     
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
         <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
     
         <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
@@ -953,13 +1093,19 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
     
-        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
     
         <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
     
-        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
-    
         <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+        <span class="sidebar-tag-name" data-tags="cache"><span class="iconfont-archer">&#xe606;</span>cache</span>
+    
+        <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="queue"><span class="iconfont-archer">&#xe606;</span>queue</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -998,9 +1144,9 @@ jsonContent:
     
         <span class="sidebar-category-name" data-categories="concurrent"><span class="iconfont-archer">&#xe60a;</span>concurrent</span>
     
-        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
-    
         <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
