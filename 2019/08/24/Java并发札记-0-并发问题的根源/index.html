@@ -22,7 +22,7 @@
     <meta name="description" content>
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>初识Disruptor · JohnShen&#39;s Blog.</title>
+    <title>[Java并发札记] 0.并发问题的根源 · JohnShen&#39;s Blog.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -217,7 +217,7 @@
                 <a href="/" >JohnShen&#39;s Blog.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">初识Disruptor</a>
+                <a href="#" class="post-name">[Java并发札记] 0.并发问题的根源</a>
             </div>
     </div>
     
@@ -247,7 +247,7 @@ height:40vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            初识Disruptor
+            [Java并发札记] 0.并发问题的根源
             <!-- 404 -->
             
         </h1>
@@ -266,18 +266,18 @@ height:40vh;
                 
                     <div class= post-intro-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "queue">queue</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "concurrent">concurrent</a>
     
 </div>
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">96</span>阅读时长: <span class="post-count reading-time">1 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">1.2k</span>阅读时长: <span class="post-count reading-time">4 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                    <span class="post-intro-time">2019/08/11</span>
+                    <span class="post-intro-time">2019/08/24</span>
                     
                     <span class="shareWrapper">
                         <span class="iconfont-archer shareIcon">&#xe71d;</span>
@@ -396,9 +396,41 @@ height:40vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h1 id="Disruptor"><a href="#Disruptor" class="headerlink" title="Disruptor"></a>Disruptor</h1><p>Disruptor 可以理解为高性能队列，或事件监听模式的实现，或观察者模式的实现。</p>
-<p>数据主动 push 给消费者，非 pull 模式。消费者最高可以每秒拿到 600w 的数据。可以与<code>ArrayBlockingQueue</code>做对比，效率高出一个数量级。</p>
-<p>业务逻辑处理器运行在内存中，基于<code>事件驱动</code>的方式。</p>
+        <blockquote>
+<p>正式开启并发的回顾整理，札记主要记录知识点、典型Case、自己的想法、思维导图以及好的文章，侧重于知识的理解与整理，毕竟要在并发上有自己独到的理解还是欠火候的。以后回顾或学习到新内容，会不断对文章进行更新，以作长期知识储备。</p>
+</blockquote>
+<h1 id="并发编程问题的根源"><a href="#并发编程问题的根源" class="headerlink" title="并发编程问题的根源"></a>并发编程问题的根源</h1><h2 id="1-CPU缓存导致“可见性”问题"><a href="#1-CPU缓存导致“可见性”问题" class="headerlink" title="1. CPU缓存导致“可见性”问题"></a>1. CPU缓存导致“可见性”问题</h2><p>单核时代，所有线程操作同一个CPU的缓存，CPU缓存和内存间不会存在数据不一致问题。</p>
+<p><strong>一个线程对共享变量的修改，另一个线程能立刻看到，即为“可见性”。</strong></p>
+<p>多核时代，每个CPU都有自己的缓存，这就容易造成数据一致性问题。例如对应特定变量V，线程A操作CPU1上V的缓存，线程B操作CPU2上V的缓存，前者对V的操作于后者而言不具备可见性。这就是<strong>缓存一致性</strong>问题。</p>
+<blockquote>
+<h4 id="缓存一致性-Cache-Coherence"><a href="#缓存一致性-Cache-Coherence" class="headerlink" title="缓存一致性(Cache Coherence)"></a>缓存一致性(Cache Coherence)</h4><p>计算机的CPU与内存间有一层高速缓存作为缓冲，用于解决处理器与内存之间的速度矛盾。在多处理器系统中，每个处理器都有自己的高速缓存，而它们又共享同一主内存。如果某一处理器将数据写会内存，其他处理器上的值是旧的，执行计算操作会有问题。为了保证各个处理器的缓存是一致的，就会实现缓存一致性协议，每个处理器通过嗅探在总线上传播的数据来检查自己缓存的值是不是过期。</p>
+</blockquote>
+<p>样例：多线程并发执行<code>count += 1</code>，结果往往可能和想象结果不一样。两个相同的线程同时执行，第一次都会将 count = 0 读入自己的CPU缓存，执行完之后各自的CPU缓存中的值都是1，同时写入内存后，内存中的值为1。</p>
+<h2 id="2-线程切换带来的“原子性”问题"><a href="#2-线程切换带来的“原子性”问题" class="headerlink" title="2. 线程切换带来的“原子性”问题"></a>2. 线程切换带来的“原子性”问题</h2><p>现代操作系统的CPU调度都是使用时间片算法，经过特定时间片之后便会进行任务切换。曾经的操作系统基于进程调度CPU，不同进程不共享内存空间，进程切换要切换内存映射地址。而进程内的所有线程共享同一个内存区间，使用线程进行任务切换成本较低，所以现代操作系统更多基于轻量的线程进行调度，常说的CPU任务切换特指线程切换。</p>
+<p>高级语言中的一条语句往往需要多个CPU指令完成。如 <code>count += 1</code>，需要三条指令：</p>
+<ol>
+<li>将 count 值从内存中加载到CPU的寄存器中；</li>
+<li>在CPU寄存器中执行 +1 操作；</li>
+<li>将结果写会内存（也可能写回 CPU 高速缓存）。</li>
+</ol>
+<p>而操作系统的任务切换是可以发生在任何一条CPU指令执行完，而非高级语言的一条语句。如果两个线程执行 count 操作，线程A执行指令1后，CPU切换到线程B，线程执行完 +1 操作后，将1写回内存，后又切换至线程A，线程A执行 +1 命令的结果是1，后又将count=1的结果写入内存。</p>
+<p><strong>一个或者多个操作在 CPU 执行的过程中不被中断的特性称为“原子性”。</strong>CPU 能保证的原子操作是 CPU 指令级别的，而不是高级语言的操作符。</p>
+<h2 id="3-编译优化带来的“有序性”问题"><a href="#3-编译优化带来的“有序性”问题" class="headerlink" title="3. 编译优化带来的“有序性”问题"></a>3. 编译优化带来的“有序性”问题</h2><p>编译器有时为了优化性能，有时会更改代码中的先后执行顺序。</p>
+<p>示例：双重检查锁（无volatile）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">  <span class="keyword">static</span> Singleton instance;</span><br><span class="line">  <span class="function"><span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">synchronized</span>(Singleton.class) &#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>)</span><br><span class="line">          instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行new操作实际上执行的是：</p>
+<ol>
+<li>分配一块内存M；</li>
+<li>在内存M上初始化对象；</li>
+<li>将 M 的地址赋值给示例对象。</li>
+</ol>
+<p>但优化后的执行路径可能将2与3互换，当一个线程执行到内存地址赋值，切换到另一个线程，它会在第一个为空判断时直接返回 instance 对象，但 instance 对象没有初始化过，这时使用 instance 可能发生空指针异常。</p>
+<hr>
+<h1 id="Case"><a href="#Case" class="headerlink" title="Case"></a>Case</h1><p>Q: 32位机器对 long 类型变量进行加减操作存在并发隐患的原因。</p>
+<p>A: 因为64位的 long 类型在32位的机器上的操作必然是由多条CPU指令组合而成，是无法保证原子性的。</p>
+<hr>
+<h3 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h3><p><a href="https://time.geekbang.org/column/article/83682" target="_blank" rel="noopener">https://time.geekbang.org/column/article/83682</a></p>
 
     </article>
     <!-- license  -->
@@ -408,16 +440,16 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" title= "[Leetcode单排] 二叉树的序列化与反序列化 (N297)">
-                    <div class="nextTitle">[Leetcode单排] 二叉树的序列化与反序列化 (N297)</div>
+                <a href= "/2019/08/25/Java并发札记-1-Java内存模型/" title= "[Java并发札记] 1. Java内存模型">
+                    <div class="nextTitle">[Java并发札记] 1. Java内存模型</div>
                 </a>
             
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2019/08/10/Leetcode单排- 树类题目集合1-N102-N107-N429-N872-N112-N113/" title= "[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)">
-                    <div class="prevTitle">[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)</div>
+                <a href= "/2019/08/18/Alibaba-Java开发手册-条目总结/" title= "Alibaba Java开发手册 条目总结">
+                    <div class="prevTitle">Alibaba Java开发手册 条目总结</div>
                 </a>
             
         </li>
@@ -508,7 +540,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Disruptor"><span class="toc-number">1.</span> <span class="toc-text">Disruptor</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#并发编程问题的根源"><span class="toc-number">1.</span> <span class="toc-text">并发编程问题的根源</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-CPU缓存导致“可见性”问题"><span class="toc-number">1.1.</span> <span class="toc-text">1. CPU缓存导致“可见性”问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#缓存一致性-Cache-Coherence"><span class="toc-number">1.1.0.1.</span> <span class="toc-text">缓存一致性(Cache Coherence)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-线程切换带来的“原子性”问题"><span class="toc-number">1.2.</span> <span class="toc-text">2. 线程切换带来的“原子性”问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-编译优化带来的“有序性”问题"><span class="toc-number">1.3.</span> <span class="toc-text">3. 编译优化带来的“有序性”问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Case"><span class="toc-number">2.</span> <span class="toc-text">Case</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Reference"><span class="toc-number">2.0.1.</span> <span class="toc-text">Reference</span></a></li></ol></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -864,9 +896,24 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 27
+        Total : 28
         </div>
         <!-- search  -->
         
@@ -882,17 +929,32 @@ top:40vh;
     
     
         <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[Java并发札记] 1. Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2019/08/24/Java并发札记-0-并发问题的根源/" >[Java并发札记] 0.并发问题的根源</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/18</span><a class="archive-post-title" href= "/2019/08/18/Alibaba-Java开发手册-条目总结/" >Alibaba Java开发手册 条目总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
             <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" >Spring Data Redis 实践 (v2.1.7)</a>
         </li>
     
     
         <li class="archive-post-item">
             <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" >[Leetcode单排] 二叉树的序列化与反序列化 (N297)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">08/11</span><a class="archive-post-title" href= "/2019/08/11/初识Disruptor/" >初识Disruptor</a>
         </li>
     
     
@@ -937,17 +999,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-3-Lock/" >[Java并发札记] 3.Lock</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Java并发札记-1-并发概念与Java内存模型/" >[Java并发札记] 1. 并发概念与Java内存模型</a>
         </li>
     
     
@@ -1020,6 +1072,8 @@ top:40vh;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
+        <span class="sidebar-tag-name" data-tags="code standards"><span class="iconfont-archer">&#xe606;</span>code standards</span>
+    
         <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
     
         <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
@@ -1036,9 +1090,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
     
-        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
-    
         <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
     
         <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
     
@@ -1047,8 +1101,6 @@ top:40vh;
         <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
     
         <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
-    
-        <span class="sidebar-tag-name" data-tags="queue"><span class="iconfont-archer">&#xe606;</span>queue</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -1083,11 +1135,11 @@ jsonContent:
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
         <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
     
         <span class="sidebar-category-name" data-categories="concurrent"><span class="iconfont-archer">&#xe60a;</span>concurrent</span>
-    
-        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
     
         <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
     

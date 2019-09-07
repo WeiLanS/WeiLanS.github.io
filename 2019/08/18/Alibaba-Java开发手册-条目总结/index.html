@@ -22,7 +22,7 @@
     <meta name="description" content>
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>[Leetcode单排] 分割回文串 (N131) · JohnShen&#39;s Blog.</title>
+    <title>Alibaba Java开发手册 条目总结 · JohnShen&#39;s Blog.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -217,7 +217,7 @@
                 <a href="/" >JohnShen&#39;s Blog.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">[Leetcode单排] 分割回文串 (N131)</a>
+                <a href="#" class="post-name">Alibaba Java开发手册 条目总结</a>
             </div>
     </div>
     
@@ -247,7 +247,7 @@ height:40vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            [Leetcode单排] 分割回文串 (N131)
+            Alibaba Java开发手册 条目总结
             <!-- 404 -->
             
         </h1>
@@ -266,24 +266,18 @@ height:40vh;
                 
                     <div class= post-intro-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "backtracking">backtracking</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "dfs">dfs</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "search">search</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "partition">partition</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "code standards">code standards</a>
     
 </div>
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">263</span>阅读时长: <span class="post-count reading-time">1 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">3.9k</span>阅读时长: <span class="post-count reading-time">14 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                    <span class="post-intro-time">2019/08/04</span>
+                    <span class="post-intro-time">2019/08/18</span>
                     
                     <span class="shareWrapper">
                         <span class="iconfont-archer shareIcon">&#xe71d;</span>
@@ -402,10 +396,233 @@ height:40vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h1 id="131-Palindrome-Partitioning"><a href="#131-Palindrome-Partitioning" class="headerlink" title="131. Palindrome Partitioning"></a>131. Palindrome Partitioning</h1><p><a href="https://leetcode.com/problems/palindrome-partitioning/" target="_blank" rel="noopener">https://leetcode.com/problems/palindrome-partitioning/</a></p>
-<p>DFS 回溯 典型问题。基本同 N93 复原IP地址问题。</p>
-<p>需要注意的是 <code>handle</code>方法里面 for 的终止条件，一开始写的是<code>i &lt; str.length()</code>，发现最后一个字符总是漏掉，主要是 substring 的第二个参数在截取的时候 exclude，i 这个值本身可以等于 length。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> List&lt;List&lt;String&gt;&gt; partition(String s) &#123;</span><br><span class="line">    List&lt;List&lt;String&gt;&gt; result = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    <span class="keyword">if</span> (s == <span class="keyword">null</span> || s.length() == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    handle(s, <span class="number">0</span>, <span class="keyword">new</span> ArrayList&lt;&gt;(), result);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(String str, <span class="keyword">int</span> index, List&lt;String&gt; curList, List&lt;List&lt;String&gt;&gt; result)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (index == str.length()) &#123;</span><br><span class="line">        result.add(<span class="keyword">new</span> ArrayList&lt;&gt;(curList));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = index + <span class="number">1</span>; i &lt;= str.length(); i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (isPalindrome(str.substring(index, i))) &#123;</span><br><span class="line">            curList.add(str.substring(index, i));</span><br><span class="line">            handle(str, i, curList, result);</span><br><span class="line">            curList.remove(curList.size() - <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isPalindrome</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (str.length() == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; str.length() / <span class="number">2</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (str.charAt(i) != str.charAt(str.length() - i - <span class="number">1</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <p>基于<a href="https://github.com/alibaba/p3c/blob/master/阿里巴巴Java开发手册（华山版）.pdf" target="_blank" rel="noopener">阿里巴巴Java开发手册（华山版）</a>。</p>
+<p>对部分重要的条目进行摘录，纯属个人总结，选择标准纯个人色彩，后续可以再过滤一下 <a href="https://rules.sonarsource.com/java/" target="_blank" rel="noopener">Sonar Java Rules</a>。</p>
+<h1 id="编程规约"><a href="#编程规约" class="headerlink" title="编程规约"></a>编程规约</h1><p>【强制】类名使用UpperCamelCase风格，但以下情形例外：DO / BO / DTO / VO / AO / PO / UID等。</p>
+<blockquote>
+<p> 正例：JavaServerlessPlatform / UserDO / XmlService / TcpUdpDeal / TaPromotion</p>
+<p> 反例：javaserverlessplatform / UserDo / XMLService / TCPUDPDeal / TAPromotion </p>
+</blockquote>
+<hr>
+<p>【强制】POJO类中布尔类型变量都不要加is前缀，否则部分框架解析会引起序列化错误。</p>
+<blockquote>
+<p> 反例：定义为基本数据类型Boolean isDeleted的属性，它的方法也是isDeleted()，RPC框架在反向解析的时候，“误以为”对应的属性名称是deleted，导致属性获取不到，进而抛出异常。 </p>
+</blockquote>
+<hr>
+<p>【强制】包名统一使用小写，点分隔符之间有且仅有一个自然语义的英语单词。包名统一使用单数形式，但是类名如果有复数含义，类名可以使用复数形式。 </p>
+<blockquote>
+<p>正例：应用工具类包名为com.alibaba.ai.util、类名为MessageUtils（此规则参考spring的框架结构） </p>
+</blockquote>
+<hr>
+<p>【强制】杜绝完全不规范的缩写，避免望文不知义。 </p>
+<blockquote>
+<p>反例：AbstractClass“缩写”命名成AbsClass；condition“缩写”命名成 condi，此类随意缩写严重降低了代码的可阅读性。 </p>
+</blockquote>
+<hr>
+<p>接口和实现类的命名有两套规则：</p>
+<p> 1）【强制】对于Service和DAO类，基于SOA的理念，暴露出来的服务一定是接口，内部的实现类用Impl的后缀与接口区别。</p>
+<blockquote>
+<p>正例：CacheServiceImpl实现CacheService接口。 </p>
+</blockquote>
+<p>2） 【推荐】如果是形容能力的接口名称，取对应的形容词为接口名（通常是–able的形容词）。 </p>
+<blockquote>
+<p>正例：AbstractTranslator实现 Translatable接口。 </p>
+</blockquote>
+<hr>
+<p>【参考】各层命名规约： </p>
+<p>A)  Service/DAO层方法命名规约 </p>
+<ol>
+<li><p>获取单个对象的方法用get做前缀。 </p>
+</li>
+<li><p>获取多个对象的方法用list做前缀，复数形式结尾如：listObjects。 </p>
+</li>
+<li><p>获取统计值的方法用count做前缀。 </p>
+</li>
+<li><p>插入的方法用save/insert做前缀。 </p>
+</li>
+<li><p>删除的方法用remove/delete做前缀。 </p>
+</li>
+<li><p>修改的方法用update做前缀。</p>
+</li>
+</ol>
+<p> B)  领域模型命名规约 </p>
+<ol>
+<li><p>数据对象：xxxDO，xxx即为数据表名。 </p>
+</li>
+<li><p>数据传输对象：xxxDTO，xxx为业务领域相关的名称。 </p>
+</li>
+<li><p>展示对象：xxxVO，xxx一般为网页名称。 </p>
+</li>
+<li><p>POJO是DO/DTO/BO/VO的统称，禁止命名成xxxPOJO。 </p>
+</li>
+</ol>
+<hr>
+<p>【强制】采用4个空格缩进，禁止使用tab字符。 </p>
+<blockquote>
+<p>说明：如果使用tab缩进，必须设置1个tab为4个空格。IDEA设置tab为4个空格时，请勿勾选Use tab character；而在eclipse中，必须勾选insert spaces for tabs。 </p>
+</blockquote>
+<hr>
+<p>【强制】注释的双斜线与注释内容之间有且仅有一个空格。 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这是示例注释，请注意在双斜线之后有一个空格 </span></span><br><span class="line">String param = <span class="keyword">new</span> String();</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>【推荐】单个方法的总行数不超过80行。 </p>
+<blockquote>
+<p>说明：除注释之外的方法签名、左右大括号、方法内代码、空行、回车及任何不可见字符的总行数不超过80行。 </p>
+<p>正例：代码逻辑分清红花和绿叶，个性和共性，绿叶逻辑单独出来成为额外方法，使主干代码更加清晰；共性逻辑抽取成为共性方法，便于复用和维护。 </p>
+</blockquote>
+<hr>
+<p>【强制】所有的覆写方法，必须加@Override注解。 </p>
+<blockquote>
+<p>说明：getObject()与get0bject()的问题。一个是字母的O，一个是数字的0，加@Override可以准确判断是否覆盖成功。另外，如果在抽象类中对方法签名进行修改，其实现类会马上编译报错。 </p>
+</blockquote>
+<hr>
+<p>【强制】Object的equals方法容易抛空指针异常，应使用常量或确定有值的对象来调用equals。</p>
+<blockquote>
+<p>正例：”test”.equals(object); </p>
+<p>反例：object.equals(“test”); </p>
+<p>说明：推荐使用java.util.Objects#equals（JDK7引入的工具类）。 </p>
+</blockquote>
+<hr>
+<p>【强制】所有整型包装类对象之间值的比较，全部使用equals方法比较。 </p>
+<blockquote>
+<p>说明：对于Integer var = ? 在-128至127范围内的赋值，Integer对象是在 IntegerCache.cache产生，会复用已有对象，这个区间内的Integer值可以直接使用==进行判断，但是这个区间之外的所有数据，都会在堆上产生，并不会复用已有对象，这是一个大坑，推荐使用equals方法进行判断。 </p>
+</blockquote>
+<hr>
+<p>【强制】浮点数之间的等值判断，基本数据类型不能用==来比较，包装数据类型不能用equals来判断。 </p>
+<blockquote>
+<p>说明：浮点数采用“尾数+阶码”的编码方式，类似于科学计数法的“有效数字+指数”的表示方式</p>
+</blockquote>
+<p>反例： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> a = <span class="number">1.0f</span> - <span class="number">0.9f</span>; </span><br><span class="line"><span class="keyword">float</span> b = <span class="number">0.9f</span> - <span class="number">0.8f</span>; </span><br><span class="line"><span class="keyword">if</span> (a == b) &#123; </span><br><span class="line"><span class="comment">// 预期进入此代码快，执行其它业务逻辑 </span></span><br><span class="line"><span class="comment">// 但事实上a==b的结果为false </span></span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">Float x = Float.valueOf(a); </span><br><span class="line">Float y = Float.valueOf(b); </span><br><span class="line"><span class="keyword">if</span> (x.equals(y)) &#123; </span><br><span class="line"><span class="comment">// 预期进入此代码快，执行其它业务逻辑 </span></span><br><span class="line"><span class="comment">// 但事实上equals的结果为false </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>正例： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// (1) 指定一个误差范围，两个浮点数的差值在此范围之内，则认为是相等的。 </span></span><br><span class="line"><span class="keyword">float</span> a = <span class="number">1.0f</span> - <span class="number">0.9f</span>; </span><br><span class="line"><span class="keyword">float</span> b = <span class="number">0.9f</span> - <span class="number">0.8f</span>; </span><br><span class="line"><span class="keyword">float</span> diff = <span class="number">1e-6f</span>; </span><br><span class="line"><span class="keyword">if</span> (Math.abs(a - b) &lt; diff) &#123; </span><br><span class="line">	System.out.println(<span class="string">"true"</span>); s</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">// (2) 使用BigDecimal来定义值，再进行浮点数的运算操作。 </span></span><br><span class="line">BigDecimal a = <span class="keyword">new</span> BigDecimal(<span class="string">"1.0"</span>); </span><br><span class="line">BigDecimal b = <span class="keyword">new</span> BigDecimal(<span class="string">"0.9"</span>); </span><br><span class="line">BigDecimal c = <span class="keyword">new</span> BigDecimal(<span class="string">"0.8"</span>); </span><br><span class="line">BigDecimal x = a.subtract(b); </span><br><span class="line">BigDecimal y = b.subtract(c); </span><br><span class="line"><span class="keyword">if</span> (x.equals(y)) &#123; </span><br><span class="line">	System.out.println(<span class="string">"true"</span>); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>【强制】定义数据对象DO类时，属性类型要与数据库字段类型相匹配。</p>
+<blockquote>
+<p> 正例：数据库字段的bigint必须与类属性的Long类型相对应。 </p>
+<p>反例：某个案例的数据库表id字段定义类型bigint unsigned，实际类对象属性为Integer，随着id越来越大，超过Integer的表示范围而溢出成为负数。 </p>
+</blockquote>
+<hr>
+<p>【强制】为了防止精度损失，禁止使用构造方法BigDecimal(double)的方式把double值转化为BigDecimal对象。 </p>
+<p>说明：BigDecimal(double)存在精度损失风险，在精确计算或值比较的场景中可能会导致业务逻辑异常。如：BigDecimal g = new BigDecimal(0.1f); 实际的存储值为：0.10000000149 </p>
+<p>正例：优先推荐入参为String的构造方法，或使用BigDecimal的valueOf方法，此方法内部其实执行了Double的toString，而Double的toString按double的实际能表达的精度对尾数进行了截断。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BigDecimal recommend1 = <span class="keyword">new</span> BigDecimal(<span class="string">"0.1"</span>); BigDecimal recommend2 = BigDecimal.valueOf(<span class="number">0.1</span>);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>关于基本数据类型与包装数据类型的使用标准如下：</p>
+<p> 1） 【强制】所有的POJO类属性必须使用包装数据类型。</p>
+<p> 2） 【强制】RPC方法的返回值和参数必须使用包装数据类型。 </p>
+<p>3） 【推荐】所有的局部变量使用基本数据类型。 </p>
+<blockquote>
+<p>说明：POJO类属性没有初值是提醒使用者在需要使用时，必须自己显式地进行赋值，任何NPE问题，或者入库检查，都由使用者来保证。 </p>
+<p>正例：数据库的查询结果可能是null，因为自动拆箱，用基本数据类型接收有NPE风险。 </p>
+<p>反例：比如显示成交总额涨跌情况，即正负x%，x为基本数据类型，调用的RPC服务，调用不成功时，返回的是默认值，页面显示为0%，这是不合理的，应该显示成中划线。所以包装数据类型的null值，能够表示额外的信息，如：远程调用失败，异常退出。 </p>
+</blockquote>
+<hr>
+<p>【强制】定义DO/DTO/VO等POJO类时，不要设定任何属性默认值。 </p>
+<blockquote>
+<p>反例：POJO类的createTime默认值为new Date()，但是这个属性在数据提取时并没有置入具体值，在更新其它字段时又附带更新了此字段，导致创建时间被修改成当前时间。 </p>
+</blockquote>
+<hr>
+<p>【强制】序列化类新增属性时，请不要修改serialVersionUID字段，避免反序列失败；如果完全不兼容升级，避免反序列化混乱，那么请修改serialVersionUID值。 </p>
+<blockquote>
+<p>说明：注意serialVersionUID不一致会抛出序列化运行时异常。 </p>
+</blockquote>
+<hr>
+<p>【强制】POJO类必须写toString方法。使用IDE中的工具：source&gt; generate toString时，如果继承了另一个POJO类，注意在前面加一下super.toString。 </p>
+<blockquote>
+<p>说明：在方法执行抛出异常时，可以直接调用POJO的toString()方法打印其属性值，便于排查问题。 </p>
+</blockquote>
+<hr>
+<p>【推荐】使用索引访问用String的split方法得到的数组时，需做最后一个分隔符后有无内容的检查，否则会有抛IndexOutOfBoundsException的风险。 </p>
+<p>说明： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String str = <span class="string">"a,b,c,,"</span>; </span><br><span class="line">String[] ary = str.split(<span class="string">","</span>); </span><br><span class="line"><span class="comment">// 预期大于3，结果是3 </span></span><br><span class="line">System.out.println(ary.length);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>【推荐】 类内方法定义的顺序依次是：公有方法或保护方法 &gt; 私有方法 &gt; getter / setter 方法。 </p>
+<blockquote>
+<p>说明：公有方法是类的调用者和维护者最关心的方法，首屏展示最好；保护方法虽然只是子类关心，也可能是“模板设计模式”下的核心方法；而私有方法外部一般不需要特别关心，是一个黑盒实现；因为承载的信息价值较低，所有Service和DAO的getter/setter方法放在类体最后。 </p>
+</blockquote>
+<hr>
+<p>【推荐】循环体内，字符串的连接方式，使用StringBuilder的append方法进行扩展。 说明：下例中，反编译出的字节码文件显示每次循环都会new出一个StringBuilder对象，然后进行append操作，最后通过toString方法返回String对象，造成内存资源浪费。 </p>
+<p>反例： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String str = <span class="string">"start"</span>; </span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123; </span><br><span class="line">	str = str + <span class="string">"hello"</span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>【推荐】final可以声明类、成员变量、方法、以及本地变量，下列情况使用final关键字：</p>
+<p> 1） 不允许被继承的类，如：String类。 </p>
+<p>2） 不允许修改引用的域对象。 </p>
+<p>3） 不允许被覆写的方法，如：POJO类的setter方法。</p>
+<p> 4） 不允许运行过程中重新赋值的局部变量。</p>
+<p> 5） 避免上下文重复使用一个变量，使用final可以强制重新定义一个变量，方便更好地进行重构。 </p>
+<hr>
+<p>【推荐】慎用Object的clone方法来拷贝对象。 </p>
+<blockquote>
+<p>说明：对象clone方法默认是浅拷贝，若想实现深拷贝需覆写clone方法实现域对象的深度遍历式拷贝。 </p>
+</blockquote>
+<hr>
+<p>【推荐】类成员与方法访问控制从严： </p>
+<p>1） 如果不允许外部直接通过new来创建对象，那么构造方法必须是private。 </p>
+<p>2） 工具类不允许有public或default构造方法。 </p>
+<p>3） 类非static成员变量并且与子类共享，必须是protected。</p>
+<p>4） 类非static成员变量并且仅在本类使用，必须是private。 </p>
+<p>5） 类static成员变量如果仅在本类使用，必须是private。 </p>
+<p>6） 若是static成员变量，考虑是否为final。 </p>
+<p>7） 类成员方法只供类内部调用，必须是private。 </p>
+<p>8） 类成员方法只对继承类公开，那么限制为protected。 </p>
+<h1 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h1><p>【强制】catch时请分清稳定代码和非稳定代码，稳定代码指的是无论如何不会出错的代码。对于非稳定代码的catch尽可能进行区分异常类型，再做对应的异常处理。 </p>
+<blockquote>
+<p>说明：对大段代码进行try-catch，使程序无法根据不同的异常做出正确的应激反应，也不利于定位问题，这是一种不负责任的表现。 </p>
+<p>正例：用户注册的场景中，如果用户输入非法字符，或用户名称已存在，或用户输入密码过于简单，在程序上作出分门别类的判断，并提示给用户。 </p>
+</blockquote>
+<hr>
+<p>【强制】有try块放到了事务代码中，catch异常后，如果需要回滚事务，一定要注意手动回滚事务。 </p>
+<hr>
+<p>【强制】finally块必须对资源对象、流对象进行关闭，有异常也要做try-catch。 </p>
+<blockquote>
+<p>说明：如果JDK7及以上，可以使用try-with-resources方式。 </p>
+</blockquote>
+<hr>
+<p>【强制】不要在finally块中使用return。 </p>
+<p>说明：try块中的return语句执行成功后，并不马上返回，而是继续执行finally块中的语句，如果此处存在return语句，则在此直接返回，无情丢弃掉try块中的返回点。 </p>
+<hr>
+<p>【强制】在调用RPC、二方包、或动态生成类的相关方法时，捕捉异常必须使用Throwable类来进行拦截。 </p>
+<blockquote>
+<p>说明：通过反射机制来调用方法，如果找不到方法，抛出NoSuchMethodException。什么情况会抛出NoSuchMethodError呢？二方包在类冲突时，仲裁机制可能导致引入非预期的版本使类的方法签名不匹配，或者在字节码修改框架（比如：ASM）动态创建或修改类时，修改了相应的方法签名。这些情况，即使代码编译期是正确的，但在代码运行期时，会抛出NoSuchMethodError。 </p>
+</blockquote>
+<hr>
+<p>【推荐】方法的返回值可以为null，不强制返回空集合，或者空对象等，必须添加注释充分说明什么情况下会返回null值。 </p>
+<blockquote>
+<p>说明：防止NPE是调用者的责任。即使被调用方法返回空集合或者空对象，对调用者来说，也并非高枕无忧，必须考虑到远程调用失败、序列化失败、运行时异常等场景返回null的情况。 </p>
+</blockquote>
+<hr>
+<p>【推荐】定义时区分unchecked / checked 异常，避免直接抛出new RuntimeException()，更不允许抛出Exception或者Throwable，应使用有业务含义的自定义异常。推荐业界已定义过的自定义异常，如：DAOException / ServiceException等。 </p>
+<hr>
+<p>【参考】对于公司外的http/api开放接口必须使用“错误码”；而应用内部推荐异常抛出；跨应用间RPC调用优先考虑使用Result方式，封装isSuccess()方法、“错误码”、“错误简短信息”。 </p>
+<hr>
+<h1 id="日志规约"><a href="#日志规约" class="headerlink" title="日志规约"></a>日志规约</h1><p>【强制】所有日志文件至少保存15天，因为有些异常具备以“周”为频次发生的特点。网络运行状态、安全相关信息、系统监测、管理后台操作、用户敏感操作需要留存相关的网络日志不少于6个月。 </p>
+<hr>
+<p>【强制】在日志输出时，字符串变量之间的拼接使用占位符的方式。 </p>
+<blockquote>
+<p>说明：因为String字符串的拼接会使用StringBuilder的append()方式，有一定的性能损耗。使用占位符仅是替换动作，可以有效提升性能。 </p>
+<p>正例：logger.debug(“Processing trade with id: {} and symbol: {}”, id, symbol); </p>
+</blockquote>
+<hr>
+<p>【强制】异常信息应该包括两类信息：案发现场信息和异常堆栈信息。如果不处理，那么通过关键字throws往上抛出。</p>
+<blockquote>
+<p> 正例：logger.error(各类参数或者对象toString() + “_” + e.getMessage(), e); </p>
+</blockquote>
+<hr>
+<p>【推荐】可以使用warn日志级别来记录用户输入参数错误的情况，避免用户投诉时，无所适从。如非必要，请不要在此场景打出error级别，避免频繁报警。 </p>
+<blockquote>
+<p>说明：注意日志输出的级别，error级别只记录系统逻辑出错、异常或者重要的错误信息。 </p>
+</blockquote>
+<hr>
+<p>【推荐】尽量用英文来描述日志错误信息，如果日志中的错误信息用英文描述不清楚的话使用中文描述即可，否则容易产生歧义。【强制】国际化团队或海外部署的服务器由于字符集问题，使用全英文来注释和描述日志错误信息。 </p>
+
     </article>
     <!-- license  -->
     
@@ -414,16 +631,16 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" title= "[Leetcode单排] 运算表达式设优先级求值 (N241)">
-                    <div class="nextTitle">[Leetcode单排] 运算表达式设优先级求值 (N241)</div>
+                <a href= "/2019/08/24/Java并发札记-0-并发问题的根源/" title= "[Java并发札记] 0.并发问题的根源">
+                    <div class="nextTitle">[Java并发札记] 0.并发问题的根源</div>
                 </a>
             
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" title= "[Leetcode单排] 复原IP地址 (N93)">
-                    <div class="prevTitle">[Leetcode单排] 复原IP地址 (N93)</div>
+                <a href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" title= "Spring Data Redis 实践 (v2.1.7)">
+                    <div class="prevTitle">Spring Data Redis 实践 (v2.1.7)</div>
                 </a>
             
         </li>
@@ -514,7 +731,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#131-Palindrome-Partitioning"><span class="toc-number">1.</span> <span class="toc-text">131. Palindrome Partitioning</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#编程规约"><span class="toc-number">1.</span> <span class="toc-text">编程规约</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#异常处理"><span class="toc-number">2.</span> <span class="toc-text">异常处理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#日志规约"><span class="toc-number">3.</span> <span class="toc-text">日志规约</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
