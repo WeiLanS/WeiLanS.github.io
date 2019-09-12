@@ -346,6 +346,31 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2019/09/11/使用ClassLoader在SpringBoot打包文件中获取嵌套jar/" >
+            
+                <span>使用ClassLoader在SpringBoot打包文件中获取嵌套jar</span>
+        </a>
+        <div class="abstract-content">
+            曾几何时，我以为所谓的Spring Boot 启动原理这些知识点最多就是面试时候可能问到的东西。对不起，我错了…
+需求：针对某些DB不同版本的冲突问题，采用自定义类加载器的方式自行加载 Driver，驱动包放至 jdbc module 下，而 web module 在使用 Spring Boot 打成 jar 包后，需要获取到内部 jdbc module jar 中的驱动包。Spring Boot jar 包启动时，自定义类加载需要能够读到驱动包资源。
+前期尝试这种需求，本以为并不难做，毕竟针对 jar 包内部的 jar，Java URL 协议中本身就有jar:file:前缀提供支持。使...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/09/11</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2019/09/07/JVM-类加载机制/" >
             
                 <span>JVM 类加载机制</span>
@@ -375,12 +400,12 @@
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/25/Java并发札记-1-Java内存模型/" >
+        <a class="abstract-title" href = "/2019/08/25/Java并发札记-2-Java并发编程基础/" >
             
-                <span>[Java并发札记] 1. Java内存模型</span>
+                <span>[Java并发札记] 2.Java并发编程基础</span>
         </a>
         <div class="abstract-content">
-            Java内存模型：三种特征（原子性/可见性/有序性）、as-if-serial语义、重排序、Happens-Before、volatile
+            并发基础概念；线程基础：状态、构造、终止、中断、线程组、守护线程、优先级；等待通知机制；join()；yield()；synchronized
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -404,12 +429,12 @@
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/25/Java并发札记-2-Java并发编程基础/" >
+        <a class="abstract-title" href = "/2019/08/25/Java并发札记-1-Java内存模型/" >
             
-                <span>[Java并发札记] 2.Java并发编程基础</span>
+                <span>[Java并发札记] 1. Java内存模型</span>
         </a>
         <div class="abstract-content">
-            并发基础概念；线程基础：状态、构造、终止、中断、线程组、守护线程、优先级；等待通知机制；join()；yield()；synchronized
+            Java内存模型：三种特征（原子性/可见性/有序性）、as-if-serial语义、重排序、Happens-Before、volatile
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -588,35 +613,6 @@
         </a>
         <div class="abstract-content">
             <br>
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/09</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "tree">tree</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >
-            
-                <span>[Leetcode单排] 树的遍历 (N94 N589 N590)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode.com/problems/binary-tree-inorder-traversal/ <br> https://leetcode.com/problems/n-ary-tree-preorder-traversal/ <br> https://leetcode.com/problems/n-ary-tree-postorder-traversal/
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1082,9 +1078,34 @@
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 29
+        Total : 30
         </div>
         <!-- search  -->
         
@@ -1100,17 +1121,22 @@
     
     
         <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2019/09/11/使用ClassLoader在SpringBoot打包文件中获取嵌套jar/" >使用ClassLoader在SpringBoot打包文件中获取嵌套jar</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
             <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2019/09/07/JVM-类加载机制/" >JVM 类加载机制</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[Java并发札记] 1. Java内存模型</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[Java并发札记] 1. Java内存模型</a>
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[Java并发札记] 2.Java并发编程基础</a>
         </li>
     
     
@@ -1248,27 +1274,27 @@
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
+        <span class="sidebar-tag-name" data-tags="code standards"><span class="iconfont-archer">&#xe606;</span>code standards</span>
+    
         <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
     
         <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
-    
-        <span class="sidebar-tag-name" data-tags="code standards"><span class="iconfont-archer">&#xe606;</span>code standards</span>
     
         <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
     
         <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
     
-        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
     
         <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
     
         <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
     
-        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
     
         <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
     
-        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
     
         <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
     
@@ -1311,9 +1337,9 @@ jsonContent:
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
-    
         <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
     
         <span class="sidebar-category-name" data-categories="concurrent"><span class="iconfont-archer">&#xe60a;</span>concurrent</span>
     

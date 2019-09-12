@@ -22,7 +22,7 @@
     <meta name="description" content>
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>JohnShen&#39;s Blog.</title>
+    <title>使用ClassLoader在SpringBoot打包文件中获取嵌套jar · JohnShen&#39;s Blog.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -203,12 +203,23 @@
 </head>
 
     
+        <body class="post-body">
+    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">使用ClassLoader在SpringBoot打包文件中获取嵌套jar</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>JohnShen's Blog.</a>
 </header>
@@ -220,24 +231,63 @@
 
 
 
+
+height:40vh;
 ">
     
     <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/42/wallhaven-42oxk6.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
+            
+            使用ClassLoader在SpringBoot打包文件中获取嵌套jar
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+            
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">1.1k</span>阅读时长: <span class="post-count reading-time">4 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/09/11</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -338,330 +388,70 @@
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <main class="main index-page">
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >
-            
-                <span>[Leetcode单排] 树的遍历 (N94 N589 N590)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode.com/problems/binary-tree-inorder-traversal/ <br> https://leetcode.com/problems/n-ary-tree-preorder-traversal/ <br> https://leetcode.com/problems/n-ary-tree-postorder-traversal/
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/09</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "tree">tree</a>
-    
-</div>
-            
-        </div>
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>曾几何时，我以为所谓的<code>Spring Boot 启动原理</code>这些知识点最多就是面试时候可能问到的东西。对不起，我错了…</p>
+<p>需求：针对某些DB不同版本的冲突问题，采用自定义类加载器的方式自行加载 Driver，驱动包放至 jdbc module 下，而 web module 在使用 Spring Boot 打成 jar 包后，需要获取到内部 jdbc module jar 中的驱动包。Spring Boot jar 包启动时，自定义类加载需要能够读到驱动包资源。</p>
+<h2 id="前期尝试"><a href="#前期尝试" class="headerlink" title="前期尝试"></a>前期尝试</h2><p>这种需求，本以为并不难做，毕竟针对 jar 包内部的 jar，Java URL 协议中本身就有<code>jar:file:</code>前缀提供支持。使用<code>PathMatchingResourcePatternResolver</code>获取到 URL 后，直接赋给 URLClassLoader 应该是可行的。这种方式在 IDE 中运行时没有问题的，urls 中的 URL 都是以<code>file:</code>为前缀，运行正常；而打成 jar 包运行时，URL的格式变为<code>jar:file:/...web.jar!/BOOT-INF/lib/...jdbc.jar!/.../hive/2.1.1/hive-common-2.1.1.jar</code>，运行时出现了<code>java.lang.ClassNotFoundException</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">String location = <span class="string">"classpath:drivers/hive/2.1.1/*.jar"</span>;  </span><br><span class="line">PathMatchingResourcePatternResolver resolver = <span class="keyword">new</span> PathMatchingResourcePatternResolver();</span><br><span class="line">Resource[] resources = resolver.getResources(locationPattern);</span><br><span class="line">URL[] urls = <span class="keyword">new</span> URL[resources.length];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; resources.length; i++) &#123;</span><br><span class="line">    urls[i] = resources[i].getURL();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> URLClassLoader(urls, getClassLoader());</span><br></pre></td></tr></table></figure>
+
+<h2 id="重新调试"><a href="#重新调试" class="headerlink" title="重新调试"></a>重新调试</h2><p>我选择在一个单独的调试项目下对刚才生成的jar包进行调试。第一直觉是 <code>URLClassloader</code> 是不是不支持这种 <code>jar:file</code>前缀 URL，不过并没有找到相关描述信息，不过倒是发现刚才的<code>jar:file</code>的URL中没有加上<code>!/</code>后缀（这表示在 jar 包内部就行查找）。实际上，对于原始的JarFile URL，只支持一个<code>!/</code>。那 Spring Boot 是怎么做到的呢，他是怎么做到能够读取到 jar in jar 呢，原来 Spring Boot 扩展了协议，使其能够支持读取嵌套 jar。于是在调试项目下，我引入了<code>spring-boot-loader</code>的依赖进行试验。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-loader<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>由于一般 Spring Boot 打成的 jar 包中的<code>META-INF/MANIFEST.MF</code>文件中会包含<code>Main-Class: org.springframework.boot.loader.JarLauncher</code>。即指定了 Main Class 为 <code>JarLauncher</code>。在其 launch 方法中发现，Spring Boot 就是在 <code>JarFile.registerUrlProtocolHandler()</code>注册了<code>URLStreamHandler</code>的实现：<code>org.springframework.boot.loader.jar.Handler</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in Launcher</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">launch</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">		JarFile.registerUrlProtocolHandler();</span><br><span class="line">		ClassLoader classLoader = createClassLoader(getClassPathArchives());</span><br><span class="line">		launch(args, getMainClass(), classLoader);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// in JarFile</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PROTOCOL_HANDLER = <span class="string">"java.protocol.handler.pkgs"</span>;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">registerUrlProtocolHandler</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		String handlers = System.getProperty(PROTOCOL_HANDLER, <span class="string">""</span>);</span><br><span class="line">		System.setProperty(PROTOCOL_HANDLER, (<span class="string">""</span>.equals(handlers) ? HANDLERS_PACKAGE</span><br><span class="line">				: handlers + <span class="string">"|"</span> + HANDLERS_PACKAGE));</span><br><span class="line">		resetCachedUrlHandlers();</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在测试项目下，由于是 IDE 运行，我先在 main 方法中加入了<code>JarFile.registerUrlProtocolHandler()</code>。在Handle的openConnection方法中调用了<code>JarURLConnection</code>的<code>get(URL url, JarFile jarFile)</code>方法，真正报错的地方在于内部的<code>jarFile.getNestedJarFile(jarEntry)</code>，这个信息在<code>java.lang.ClassNotFoundException</code>的堆栈中是没有显示的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java.lang.IllegalStateException: Unable to open nested entry <span class="string">'....jar'</span>. It has been compressed and nested jar files must be stored without compression. Please check the mechanism used to create your executable jar file</span><br></pre></td></tr></table></figure>
+
+<p>显示是 Jar 包压缩的问题？于是我在 jdbc module 的 pom 文件中加了这么一段，compress 置为了false，结果发现终于成功了。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-jar-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">archive</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">addMavenDescriptor</span>&gt;</span>false<span class="tag">&lt;/<span class="name">addMavenDescriptor</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">compress</span>&gt;</span>false<span class="tag">&lt;/<span class="name">compress</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">archive</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="最终实现"><a href="#最终实现" class="headerlink" title="最终实现"></a>最终实现</h2><p>到最后发现实际上改的地方不多，但是如果自己不去调试 Spring Boot 的启动包，也发现不了真正的原因。</p>
+<p>改动1就是 jdbc module 加入了<code>maven-jar-plugin</code>插件且<code>compress</code>置为 false。 改动2是在一开始实现的 for 循环中，对于<code>jar:file</code>开头的URL加了<code>!/</code>后缀。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; resources.length; i++) &#123;</span><br><span class="line">  String urlStr = resources[i].getURL().toString();</span><br><span class="line">  <span class="keyword">if</span> (StringUtils.isNotBlank(urlStr) &amp;&amp; urlStr.startsWith(<span class="string">"jar:file"</span>)) &#123;</span><br><span class="line">    urlStr = urlStr + <span class="string">"!/"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  URL url = ResourceUtils.getURL(urlStr);</span><br><span class="line">  urls[i] = url;</span><br><span class="line">  log.info(url.toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实际上代码中不需要加<code>JarFile.registerUrlProtocolHandler()</code>注册协议，由于刚才的调试项目的main方法运行的，所以才加上。而在正式项目代码处，若打包运行的话，jar 包启动时本身就执行了注册协议；若在 IDE 里运行，<code>file:</code>前缀则不需要走此协议。当然如果不是加上这句话进行调试，也发现不了问题。</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><p><a href="https://benjaminwhx.com/2018/07/14/说说Spring中的资源文件的读取/" target="_blank" rel="noopener">https://benjaminwhx.com/2018/07/14/说说Spring中的资源文件的读取/</a></p>
+</li>
+<li><p><a href="https://segmentfault.com/a/1190000013532009" target="_blank" rel="noopener">https://segmentfault.com/a/1190000013532009</a></p>
+</li>
+<li><p><a href="https://blog.iooo.tech/2018/06/19/SpringBoot可执行文件解析/" target="_blank" rel="noopener">https://blog.iooo.tech/2018/06/19/SpringBoot可执行文件解析/</a></p>
+</li>
+</ul>
+
     </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >
-            
-                <span>[Leetcode单排] 划分为k个相等的子集 (N698)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode.com/problems/partition-to-k-equal-sum-subsets/
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "backtracking">backtracking</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "dfs">dfs</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "search">search</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/04/Leetcode单排-01矩阵-N542/" >
-            
-                <span>[Leetcode单排] 01矩阵 (N542)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode.com/problems/01-matrix/
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "search">search</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "bfs">bfs</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >
-            
-                <span>[Leetcode单排] 运算表达式设优先级求值 (N241)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode.com/problems/different-ways-to-add-parentheses/
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "search">search</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "partition">partition</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/04/Leetcode单排-分割回文串-N131/" >
-            
-                <span>[Leetcode单排] 分割回文串 (N131)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode.com/problems/palindrome-partitioning/
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "backtracking">backtracking</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "dfs">dfs</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "search">search</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "partition">partition</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/04/Leetcode单排-复原IP地址-N93/" >
-            
-                <span>[Leetcode单排] 复原IP地址 (N93)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode.com/problems/restore-ip-addresses/
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "backtracking">backtracking</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "dfs">dfs</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "search">search</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "partition">partition</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/04/Java并发札记-3-Lock/" >
-            
-                <span>[Java并发札记] 3.Lock</span>
-        </a>
-        <div class="abstract-content">
-            Lock；AbstractQueuedSynchronizer；ReentrantLock；Condition；LockSupport
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "concurrent">concurrent</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/08/01/Leetcode单排-单词接龙-N127/" >
-            
-                <span>[Leetcode单排] 单词接龙 (N127)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode.com/problems/word-ladder/
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/08/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "search">search</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "bfs">bfs</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/07/31/Clojure-in-Action-Clojure-构件/" >
-            
-                <span>Clojure in Action: Clojure 构件</span>
-        </a>
-        <div class="abstract-content">
-            对应《Clojure in Action(Second Edition)》第三章。
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/07/31</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "clojure">clojure</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >
-            
-                <span>[Leetcode单排] 单词搜索 (N79 N212)</span>
-        </a>
-        <div class="abstract-content">
-            https://leetcode-cn.com/problems/word-search/
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/07/30</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "backtracking">backtracking</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "dfs">dfs</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "search">search</a>
-    
-</div>
-            
-        </div>
-    </article>
+    <!-- license  -->
     
     <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/09/07/JVM-类加载机制/" title= "JVM 类加载机制">
+                    <div class="prevTitle">JVM 类加载机制</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
     
-    <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/archives/">&#60; PREV</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span><a class="page-number" href="/archives/page/3/">3</a><a class="extend next" rel="next" href="/archives/page/3/">NEXT &#62;</a>
-    </nav>
     
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
 </main>
             <!-- profile -->
             
@@ -718,6 +508,24 @@
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前期尝试"><span class="toc-number">1.</span> <span class="toc-text">前期尝试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重新调试"><span class="toc-number">2.</span> <span class="toc-text">重新调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#最终实现"><span class="toc-number">3.</span> <span class="toc-text">最终实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-number">4.</span> <span class="toc-text">Reference</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -1401,6 +1209,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
      
     </body>
 </html>
