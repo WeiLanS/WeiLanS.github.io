@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>[HikariCP] HikariCP 配置项  · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">[HikariCP] HikariCP 配置项 </a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/q6/wallhaven-q6omvd.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [HikariCP] HikariCP 配置项 
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "connection-pool">connection-pool</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "db">db</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.4k</span>阅读时长: <span class="post-count reading-time">8 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/12/18</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>HikariCP 的全部配置介绍来自其<a href="https://github.com/brettwooldridge/HikariCP" target="_blank" rel="noopener">首页</a>，主要分为必填项和可选项，对于大部分配置项，HikariCP会有默认设置，官方建议在使用时无需过多的调整。 一些非必要属性的配置说明来自《HikariCP数据库连接池实战》。</p>
+</blockquote>
+<a id="more"></a>
+
+<p>相比其他数据库连接池，HikariCP会少一些配置项，作者的原话是：</p>
+<blockquote>
+<p> In keeping with the <em>simple is better</em> or <em>less is more</em> design philosophy, some configuration axis are intentionally left out.</p>
+</blockquote>
+<h1 id="必填配置"><a href="#必填配置" class="headerlink" title="必填配置"></a>必填配置</h1><p>需填写三项：</p>
+<ul>
+<li><p>dataSourceClassName、jdbcUrl 二选一</p>
+</li>
+<li><p>username</p>
+</li>
+<li><p>password</p>
+</li>
+</ul>
+<h2 id="dataSourceClassName"><a href="#dataSourceClassName" class="headerlink" title="dataSourceClassName"></a>dataSourceClassName</h2><p>顾名思义，该属性就是 JDBC 驱动中<code>DataSource</code>的名称。<code>dataSourceClassName</code>和<code>jdbcUrl</code>都是可以的，但作者更推荐 dataSourceClassName（<code>DataSource-based</code>），不过对于使用 Spring Boot 自动装配的用户，还是需使用jdbcUrl 配置。此外，MySQL DataSource 并不支持网络超按时，建议使用 jdbcUrl 的方式。</p>
+<h2 id="jdbcUrl"><a href="#jdbcUrl" class="headerlink" title="jdbcUrl"></a>jdbcUrl</h2><p>表明 HikariCP 使用的是传统的<code>DriverManager-based</code>配置。虽然作者认为基于 dataSourceClassName 的配置更加优越，但在实际部署上两种方式并没有差别。当使用某些老的驱动程序时，可能还需要设置 driverClassName 属性，但首先尝试不使用该属性。</p>
+<h2 id="username-amp-password"><a href="#username-amp-password" class="headerlink" title="username &amp; password"></a>username &amp; password</h2><p>从驱动中获取连接时使用到的身份认证用户名和密码。对于 DataSource，其使用 DataSouce.getConnection(String username, String password)，但对于 DriverManager，由于每个 Driver 特征不同，HikariCP 会将 username 和 password属性配置在 Properties 文件中，使用的是<code>getConnection(String url, java.util.Properties info)</code>方法。当然也可也以跳过此步，使用<code>addDataSourceProperty(&quot;username&quot;, ...)</code>及<code>addDataSourceProperty(&quot;pass&quot;, ...)</code>。</p>
+<h1 id="可选配置"><a href="#可选配置" class="headerlink" title="可选配置"></a>可选配置</h1><h2 id="常用配置"><a href="#常用配置" class="headerlink" title="常用配置"></a>常用配置</h2><h3 id="autoCommit"><a href="#autoCommit" class="headerlink" title="autoCommit"></a>autoCommit</h3><p>控制从池中返回的连接的默认自动提交行为。<em>Default: true</em></p>
+<h3 id="connectionTimeout（重要）"><a href="#connectionTimeout（重要）" class="headerlink" title="connectionTimeout（重要）"></a>connectionTimeout（重要）</h3><p>控制客户端等待池中连接的最长毫秒数，如果在没有连接可用的情况下超过此时间，则抛出SQLException，最低可接受的连接超时为250ms，<em>Default: 30000 (30s)</em>。</p>
+<h3 id="idleTimeout"><a href="#idleTimeout" class="headerlink" title="idleTimeout"></a>idleTimeout</h3><p>控制连接允许被闲置在池中的最大时间（此设置仅适用于minimumIdle定义为比maximumPoolSize小）。当整个连接池数量在 minimumIdle 时，空闲连接将不会退役。空闲连接在这个超时时间之前不可能退役。该值为 0 表示空闲连接永远不可能从连接池中移除。该值允许的最小值是：10000(10s)，<em>Default: 600000(10min)</em>。</p>
+<blockquote>
+<p>原文中还有一句<code>Whether a connection is retired as idle or not is subject to a maximum variation of +30 seconds, and average variation of +15 seconds.</code>并不太好理解其含义。可能是指在达到 idleTimeout 后还需要的部分时间（比如检测任务的间隔时间）进行辨别。</p>
+</blockquote>
+<h3 id="maxLifeTime（重要）"><a href="#maxLifeTime（重要）" class="headerlink" title="maxLifeTime（重要）"></a>maxLifeTime（重要）</h3><p>控制池中连接的最大生命周期，使用中的连接永远不会退役，只有当它在关闭后在会被移除。作者强烈建议用户设置此值，并且它应该比任何数据源的连接源的连接限制短几秒。值为0表示无限期生存，<em>Default: 1800000(30min)</em>。</p>
+<blockquote>
+<p>有些使用MySQL的应用会报如下的错误：</p>
+<p><code>The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.</code></p>
+<p>这个问题分两种情况来看，是立即发生还是一段时间以后发生？如果是一段时间以后发生，在数据库的wait_timeout短于HikariCP的maxLifetime值的时候，发生的情况并不少见。一般来说，可以将maxLifetime设置缩短到900000毫秒（15分钟）然而更好的方法是，确定MySQL配置的wait_timeout值是什么，并将HikariCP设置为比maxLifetime短几分钟。</p>
+</blockquote>
+<h3 id="connectionTestQuery"><a href="#connectionTestQuery" class="headerlink" title="connectionTestQuery"></a>connectionTestQuery</h3><p>作者强烈建议，如果驱动支持 JDBC4，请不要使用这个属性。这适用于不支持 JDBC4 的 <code>Connection.isValid()</code> 的驱动。该属性是一个检测查询，在数据库连接池给出连接之前进行查询，以验证与数据库的连接是否仍然存在且有效。</p>
+<p>如果追求极致性能，建议不设置此值，当不配置此值时会通过ping命令进行检测，性能会更好。 <em>Default: none</em></p>
+<h3 id="minimumIdle"><a href="#minimumIdle" class="headerlink" title="minimumIdle"></a>minimumIdle</h3><p>控制HikariCP尝试在池中维护的最小空闲连接数，若空闲连接数低于此值且池中的总连接数小于maximumPoolSize，则HikariCP将尽最大努力有效添加其他连接。</p>
+<p>为了最大提高性能和对峰值需求的响应能力，作者不建议设置此值，而是让HikariCP充当一个固定大小连接池。若该参数未设置，则置为 maximumPoolSize，当连接关闭时，将会在池中被替换。如果设置了此值，那 HikariCP 就是一个大小可变的池，即使使用情况上下浮动，连接池也会保持 minimumIdle 连接可用。<em>Default: same as maximumPoolSize</em></p>
+<h3 id="maximumPoolSize"><a href="#maximumPoolSize" class="headerlink" title="maximumPoolSize"></a>maximumPoolSize</h3><p>控制连接池到达的最大大小，包括空闲的和正在使用的连接，由此值控制后端的实际连接的最大数量。当池到达此大小且没有空闲连接可使用时，对 getConnection  的调用将阻塞至超时前 connectionTimeout 毫秒。</p>
+<h3 id="metricRegistry"><a href="#metricRegistry" class="headerlink" title="metricRegistry"></a>metricRegistry</h3><p>允许用户指定池使用的 MetricRegistry 示例，记录各种指标度量值。</p>
+<h3 id="healthCheckRegistry"><a href="#healthCheckRegistry" class="headerlink" title="healthCheckRegistry"></a>healthCheckRegistry</h3><p>允许用户指定池使用的 HealthCheckRegistry 示例，报告当前系统的健康信息。(Micrometer不支持)</p>
+<h3 id="poolName"><a href="#poolName" class="headerlink" title="poolName"></a>poolName</h3><p>标识连接池的用户定义名称，主要用于显示在日志记录和JMX管理控制台上。<em>Default: auto-generated</em></p>
+<h2 id="非常用配置"><a href="#非常用配置" class="headerlink" title="非常用配置"></a>非常用配置</h2><h3 id="initializationFailTimeout"><a href="#initializationFailTimeout" class="headerlink" title="initializationFailTimeout"></a>initializationFailTimeout</h3><p>如果池无法成功初始化连接，则此属性控制池是否“快速失败”。任何正数都被认为是尝试获取初始连接的毫秒数；在此期间，应用程序线程将被阻塞。如果在超时发生之前无法获取连接，则将引发异常。initializationFailTimeout超时发生在connectionTimeout阶段之后。如果值为0，HikariCP将尝试获取并验证连接。如果获得连接但验证失败，则抛出异常，而不会启动池。但是，如果无法获得连接，则池将启动，但稍后获取连接的尝试会失败。小于0的值将绕过任何初始连接尝试，并且池将在尝试在后台获取连接时立即启动。因此，以后获得连接的尝试可能会失败。默认值：1。</p>
+<blockquote>
+<p> 感觉官网说的还是比较晦涩，建议看<code>HikariPool#checkFailFast</code>源码。</p>
+</blockquote>
+<h3 id="isolateInternalQueries"><a href="#isolateInternalQueries" class="headerlink" title="isolateInternalQueries"></a>isolateInternalQueries</h3><p>此属性决定HikariCP是否在自己的事务中隔离内部池查询，例如连接存活测试。由于这些通常是只读查询，因此很少有必要将它们封装在自己的事务中。此属性仅在autoCommit禁用时适用。默认值：false。</p>
+<h3 id="allowPoolSuspension"><a href="#allowPoolSuspension" class="headerlink" title="allowPoolSuspension"></a>allowPoolSuspension</h3><p> 此属性控制池是否可以通过JMX挂起和恢复。这对某些故障转移自动化方案很有用。当池被挂起时，调用getConnection()将不会超时，并将一直保持到池恢复为止。默认值：false。</p>
+<h3 id="readOnly"><a href="#readOnly" class="headerlink" title="readOnly"></a>readOnly</h3><p>此属性控制默认情况下从池中获取的Connections是否处于只读模式。请注意，某些数据库不支持只读模式的概念，而其他数据库在Connection设置为只读时提供查询优化。是否需要此属性将在很大程度上取决于那的应用程序和数据库。默认值：false。</p>
+<h3 id="registerMbeans"><a href="#registerMbeans" class="headerlink" title="registerMbeans"></a>registerMbeans</h3><p>此属性控制是否注册JMX管理Bean（“MBean”）。默认值：false。</p>
+<h3 id="catalog"><a href="#catalog" class="headerlink" title="catalog"></a>catalog</h3><p>此属性为支持catalog的数据库设置默认catalog。如果未指定此属性，则使用JDBC驱动程序定义的默认catalog。默认值：driver default。</p>
+<h3 id="connectionInitSql"><a href="#connectionInitSql" class="headerlink" title="connectionInitSql"></a>connectionInitSql</h3><p>此属性设置一个SQL语句，该语句将在每次创建新连接之后执行，然后再将该连接添加到池中。如果此SQL无效或抛出异常，它将被视为连接失败，并将遵循标准重试逻辑。默认值：无。 </p>
+<h3 id="driverClassName"><a href="#driverClassName" class="headerlink" title="driverClassName"></a>driverClassName</h3><p>HikariCP将尝试仅基于jdbcUrl通过DriverManager解析驱动程序，但对于某些较旧的驱动程序必须指定driverClassName。除非用户收到明显的错误消息，表明未找到驱动程序，否则可忽略此属性。默认值：无。</p>
+<h3 id="transactionIsolation"><a href="#transactionIsolation" class="headerlink" title="transactionIsolation"></a>transactionIsolation</h3><p>此属性控制从池返回的连接的默认事务隔离级别。若未指定，则用JDBC驱动程序定义的默认事务隔离级别。仅当有针对所有查询的特定隔离需求时，才使用此属性。此属性的值是Connection类的常量名，如TRANSACTION_READ_COMMITTED、TRANSACTION_REPEATABLE_READ等。默认值：driver default。 </p>
+<h3 id="validationTimeout"><a href="#validationTimeout" class="headerlink" title="validationTimeout"></a>validationTimeout</h3><p>此属性控制连接测试活性的最长时间。该值必须小于connectionTimeout。最低可接受的验证超时为250毫秒。默认值：5000。</p>
+<h3 id="leakDetectionThreshold"><a href="#leakDetectionThreshold" class="headerlink" title="leakDetectionThreshold"></a>leakDetectionThreshold</h3><p>此属性控制连接在记录一条指示可能连接泄漏的消息之前流出池的时间。值为0表示禁用泄漏检测。启用泄漏检测的最低可接受值是2000（2秒）。默认值：0。</p>
+<h3 id="schema"><a href="#schema" class="headerlink" title="schema"></a>schema</h3><p>该属性为支持schema概念数据库设置默认schema。如果未指定此属性，则使用JDBC驱动程序定义的默认模式。默认值：driver default。</p>
+<h3 id="threadFactory"><a href="#threadFactory" class="headerlink" title="threadFactory"></a>threadFactory</h3><p>此属性仅可通过编程配置或IoC容器获得。此属性允许设置java.util.concurrent.ThreadFactory将用于创建池使用的所有线程的实例。在注入线程只能通过应用程序容器提供的ThreadFactory创建的某些受限执行环境中使用它。默认值：无。</p>
+<h3 id="scheduledExecutor"><a href="#scheduledExecutor" class="headerlink" title="scheduledExecutor"></a>scheduledExecutor</h3><p>仅可通过编程配置或IoC容器获得。允许设置java.util.concurrent.Scheduled-ExecutorService用于各种内部调度任务的实例。如果向HikariCP提供ScheduledThread-PoolExecutor实例，建议设置setRemoveOnCancelPolicy(true)。默认值：无。</p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/01/06/大数据入门草稿-Hive/" title= "大数据入门草稿 - Hive">
+                    <div class="nextTitle">大数据入门草稿 - Hive</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/12/16/大数据入门草稿-Hadoop/" title= "大数据入门草稿 - Hadoop">
+                    <div class="prevTitle">大数据入门草稿 - Hadoop</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#必填配置"><span class="toc-number">1.</span> <span class="toc-text">必填配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#dataSourceClassName"><span class="toc-number">1.1.</span> <span class="toc-text">dataSourceClassName</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdbcUrl"><span class="toc-number">1.2.</span> <span class="toc-text">jdbcUrl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#username-amp-password"><span class="toc-number">1.3.</span> <span class="toc-text">username &amp; password</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#可选配置"><span class="toc-number">2.</span> <span class="toc-text">可选配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#常用配置"><span class="toc-number">2.1.</span> <span class="toc-text">常用配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#autoCommit"><span class="toc-number">2.1.1.</span> <span class="toc-text">autoCommit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#connectionTimeout（重要）"><span class="toc-number">2.1.2.</span> <span class="toc-text">connectionTimeout（重要）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#idleTimeout"><span class="toc-number">2.1.3.</span> <span class="toc-text">idleTimeout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#maxLifeTime（重要）"><span class="toc-number">2.1.4.</span> <span class="toc-text">maxLifeTime（重要）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#connectionTestQuery"><span class="toc-number">2.1.5.</span> <span class="toc-text">connectionTestQuery</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#minimumIdle"><span class="toc-number">2.1.6.</span> <span class="toc-text">minimumIdle</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#maximumPoolSize"><span class="toc-number">2.1.7.</span> <span class="toc-text">maximumPoolSize</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#metricRegistry"><span class="toc-number">2.1.8.</span> <span class="toc-text">metricRegistry</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#healthCheckRegistry"><span class="toc-number">2.1.9.</span> <span class="toc-text">healthCheckRegistry</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#poolName"><span class="toc-number">2.1.10.</span> <span class="toc-text">poolName</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#非常用配置"><span class="toc-number">2.2.</span> <span class="toc-text">非常用配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#initializationFailTimeout"><span class="toc-number">2.2.1.</span> <span class="toc-text">initializationFailTimeout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#isolateInternalQueries"><span class="toc-number">2.2.2.</span> <span class="toc-text">isolateInternalQueries</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#allowPoolSuspension"><span class="toc-number">2.2.3.</span> <span class="toc-text">allowPoolSuspension</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#readOnly"><span class="toc-number">2.2.4.</span> <span class="toc-text">readOnly</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#registerMbeans"><span class="toc-number">2.2.5.</span> <span class="toc-text">registerMbeans</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#catalog"><span class="toc-number">2.2.6.</span> <span class="toc-text">catalog</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#connectionInitSql"><span class="toc-number">2.2.7.</span> <span class="toc-text">connectionInitSql</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#driverClassName"><span class="toc-number">2.2.8.</span> <span class="toc-text">driverClassName</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#transactionIsolation"><span class="toc-number">2.2.9.</span> <span class="toc-text">transactionIsolation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#validationTimeout"><span class="toc-number">2.2.10.</span> <span class="toc-text">validationTimeout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#leakDetectionThreshold"><span class="toc-number">2.2.11.</span> <span class="toc-text">leakDetectionThreshold</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#schema"><span class="toc-number">2.2.12.</span> <span class="toc-text">schema</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#threadFactory"><span class="toc-number">2.2.13.</span> <span class="toc-text">threadFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#scheduledExecutor"><span class="toc-number">2.2.14.</span> <span class="toc-text">scheduledExecutor</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 42
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite 1 - CSV Adapter</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href= "/2020/01/06/大数据入门草稿-Hive/" >大数据入门草稿 - Hive</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span><a class="archive-post-title" href= "/2019/12/18/HikariCP-2-HikariCP-配置项/" >[HikariCP] HikariCP 配置项 </a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span><a class="archive-post-title" href= "/2019/12/16/大数据入门草稿-Hadoop/" >大数据入门草稿 - Hadoop</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span><a class="archive-post-title" href= "/2019/12/08/指标监控-2-云原生监控系统-Prometheus/" >[指标监控] 云原生监控系统 Prometheus</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/29</span><a class="archive-post-title" href= "/2019/11/29/指标监控-1-JVM-指标框架-Micrometer/" >[指标监控] JVM 指标框架 Micrometer</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2019/10/08/并发札记-8-原子操作类/" >[回顾并发基础] 原子操作类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2019/10/05/并发札记-7-JUC中的并发队列/" >[回顾并发基础] JUC中的并发队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/04</span><a class="archive-post-title" href= "/2019/10/04/HikariCP-1-高性能的秘密/" >[HikariCP] HikariCP为什么快</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/03</span><a class="archive-post-title" href= "/2019/10/03/HikariCP-0-DBPool & JDBC基础/" >[HikariCP] DBPool & JDBC基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-4-常用Lock实现类/" >[回顾并发基础] ReentrantLock & ReentrantReadWriteLock & StampedLock</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-5-常用并发工具类/" >[回顾并发基础] 常用并发工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span><a class="archive-post-title" href= "/2019/09/21/Java并发札记-3-Lock & AQS/" >[回顾并发基础] Lock & AQS</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2019/09/11/使用ClassLoader在SpringBoot打包文件中获取嵌套jar/" >使用自定义ClassLoader加载SpringBoot打包文件中嵌套jar驱动</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2019/09/07/JVM-类加载机制/" >JVM 类加载机制解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2019/08/24/Java并发札记-0-并发问题的根源/" >[回顾并发基础] 并发问题的根源</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" >Spring Data Redis 实践 (v2.1.7)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" >[Leetcode单排] 二叉树的序列化与反序列化 (N297)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2019/08/10/Leetcode单排- 树类题目集合1-N102-N107-N429-N872-N112-N113/" >[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树相关Easy题-N100-N101-N104-N110-N111-N572-N965/" >[Leetcode单排] 树相关Easy题 (N100 N101 N104 N110 N111 N572 N965)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >[Leetcode单排] 树的遍历 (N94 N589 N590)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >[Leetcode单排] 划分为k个相等的子集 (N698)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-01矩阵-N542/" >[Leetcode单排] 01矩阵 (N542)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >[Leetcode单排] 运算表达式设优先级求值 (N241)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-分割回文串-N131/" >[Leetcode单排] 分割回文串 (N131)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" >[Leetcode单排] 复原IP地址 (N93)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2019/08/01/Leetcode单排-单词接龙-N127/" >[Leetcode单排] 单词接龙 (N127)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span><a class="archive-post-title" href= "/2019/07/31/Clojure-in-Action-Clojure-构件/" >Clojure in Action: Clojure 构件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >[Leetcode单排] 单词搜索 (N79 N212)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="connection-pool"><span class="iconfont-archer">&#xe606;</span>connection-pool</span>
+    
+        <span class="sidebar-tag-name" data-tags="db"><span class="iconfont-archer">&#xe606;</span>db</span>
+    
+        <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+        <span class="sidebar-tag-name" data-tags="cache"><span class="iconfont-archer">&#xe606;</span>cache</span>
+    
+        <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="metrics"><span class="iconfont-archer">&#xe606;</span>metrics</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+        <span class="sidebar-category-name" data-categories="BigData"><span class="iconfont-archer">&#xe60a;</span>BigData</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

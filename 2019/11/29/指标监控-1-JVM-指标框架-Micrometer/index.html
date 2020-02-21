@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>[指标监控] JVM 指标框架 Micrometer · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">[指标监控] JVM 指标框架 Micrometer</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/q6/wallhaven-q6omvd.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [指标监控] JVM 指标框架 Micrometer
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "metrics">metrics</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.8k</span>阅读时长: <span class="post-count reading-time">12 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/11/29</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>作为 <code>Micrometer</code> + <code>Prometheus</code> + <code>Grafana</code> 的开篇，介绍<code>Micrometer</code>的基础应用。当前项目与数据库集打交道，但目前因为没有相关指标监控，项目运行情况一直是个黑盒。对于接口调用情况、连接池配置情况、性能情况若都是手动分析日志，则必然是不可行的。所以想要基于这三者搭建一台指标监控体系。</p>
+</blockquote>
+<a id="more"></a>
+
+<p>接触到<code>Micrometer</code>还是因为<code>Spring Boot Actuator</code>，在 <code>Spring Boot 2.0</code>之后，Micrometer 已经是 Actuator 的默认实现。文中默认有 Actuator 以及 Prometheus 的依赖，Actuator 在 1.x 和 2.x 区别较大，本文使用的版本是 2.1.7，且默认<code>management.endpoints.web.exposure.include</code>中包含 prometheus。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-actuator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.micrometer<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>micrometer-registry-prometheus<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>Metrics</code>可以翻译成<code>度量</code>或者<code>指标</code>，这两者其实并无太大区别，只是各适用于特定场景而已，本文中统一叫作<code>指标</code>。</p>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>Micrometer<a href="https://micrometer.io/" target="_blank" rel="noopener">首页</a>这么介绍自己：</p>
+<blockquote>
+<p>Micrometer provides a simple facade over the instrumentation clients for the most popular monitoring systems, allowing you to instrument your JVM-based application code without vendor lock-in. <strong>Think SLF4J, but for metrics.</strong></p>
+</blockquote>
+<p>不同的监控体系有不同的数据收集、命名规约、三方依赖，Micrometer 的定位就是监控系统的 Facade，类比于日志系统的 Slf4j，Micrometer 可以很好地完成针对不同监控系统的适配与切换，使指标数据可移植性最大化。在Maven仓库中，可以看到各类 Registry (<a href="https://mvnrepository.com/search?q=micrometer&ref=opensearch" target="_blank" rel="noopener">mvn</a>, <a href="https://github.com/micrometer-metrics/micrometer/tree/master/implementations" target="_blank" rel="noopener">github</a>)。</p>
+<img src="https://i.loli.net/2019/11/29/EG9a1xUbWjy5Hvm.png" width="600" align="center">
+
+
+
+<h1 id="Registry"><a href="#Registry" class="headerlink" title="Registry"></a>Registry</h1><p><code>Meter</code>是 Micrometer 最基础的接口，使用 Micrometer 时最常用的 <code>Timer</code>、<code>Counter</code>、<code>Guage</code>、<code>DistributionSummary</code>就是继承自该接口，收集的系统数据就是用 Meter 来表示。Meter 在 Micrometer 中由 <code>MeterRegistry</code>创建并保存，每个支持的监控系统都有一个<code>MeterRegistry</code>实现（Prometheus的实现是<code>PrometheusMeterRegistry</code>）。如果事先没有指定监控系统，Micrometer 默认生成一个将 Meter 最新数据保留在内存的<code>SimpleMeterRegistry</code>。</p>
+<p>在<code>SimpleMetricsExportAutoConfiguration</code>中就可以看到  SimpleMeterRegistry 的配置，该类包含: @ConditionalOnMissingBean(MeterRegistry.class)。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SimpleMeterRegistry simple = <span class="keyword">new</span> SimpleMeterRegistry();</span><br><span class="line">Counter counter = simple.counter(<span class="string">"counter"</span>);</span><br><span class="line">counter.increment();</span><br><span class="line">System.out.println(counter.count()); <span class="comment">// 1.0</span></span><br></pre></td></tr></table></figure>
+
+<p>除了作为基础实现的<code>SimpleMeterRegistry</code>外，Micrometer 提供<code>CompositeMeterRegistry</code>，可将多个 MeterRegistry 加入其中，使 Meter 数据同时发送到不同监控系统。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">CompositeMeterRegistry composite = <span class="keyword">new</span> CompositeMeterRegistry();</span><br><span class="line">Counter compositeCounter = composite.counter(<span class="string">"counter"</span>);</span><br><span class="line">compositeCounter.increment();  <span class="comment">// no op</span></span><br><span class="line">System.out.println(compositeCounter.count()); <span class="comment">// 0.0</span></span><br><span class="line"></span><br><span class="line">SimpleMeterRegistry simple1 = <span class="keyword">new</span> SimpleMeterRegistry();</span><br><span class="line">composite.add(simple1);</span><br><span class="line">SimpleMeterRegistry simple2 = <span class="keyword">new</span> SimpleMeterRegistry();</span><br><span class="line">composite.add(simple2);</span><br><span class="line"></span><br><span class="line">compositeCounter.increment();</span><br><span class="line"></span><br><span class="line">System.out.println(simple1.counter(<span class="string">"counter"</span>).count()); <span class="comment">// 1.0</span></span><br><span class="line">System.out.println(simple2.counter(<span class="string">"counter"</span>).count()); <span class="comment">// 1.0</span></span><br></pre></td></tr></table></figure>
+
+<p>此外，Micrometer 还持有一个Global MeterRegistry：<code>Metrics.globalRegistry</code>，其也是一个 CompositeMeterRegistry。如果没有引入 Prometheus 的依赖，Metrics.globalRegistry 中包含的就是 SimpleMeterRegistry，<code>MeterRegistryPostProcessor</code>会将生成的系统初始生成的 SimpleMeterRegistry 注入进全局 Registry 中。如果引入了 Prometheus 的依赖，注入进全局 Registry 的就是 PrometheusMeterRegistry。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Metrics</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> CompositeMeterRegistry globalRegistry = <span class="keyword">new</span> CompositeMeterRegistry();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">addRegistry</span><span class="params">(MeterRegistry registry)</span> </span>&#123;</span><br><span class="line">        globalRegistry.add(registry);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="命名"><a href="#命名" class="headerlink" title="命名"></a>命名</h1><h2 id="Meter"><a href="#Meter" class="headerlink" title="Meter"></a>Meter</h2><p>Micrometer 中规定单词用<code>.</code>(dot)隔开，而不同监控系统的命名规范并不一致，例如在 Micrometer 中可以这样命名一个 Meter：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">registry.timer(<span class="string">"http.server.requests"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>在不同监控系统中则应该是：</p>
+<table>
+<thead>
+<tr>
+<th align="left">system</th>
+<th align="left">name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Prometheus</td>
+<td align="left">http_server_requests_duration_seconds</td>
+</tr>
+<tr>
+<td align="left">Atlas</td>
+<td align="left">httpServerRequests</td>
+</tr>
+<tr>
+<td align="left">Graphite</td>
+<td align="left">http.server.requests</td>
+</tr>
+<tr>
+<td align="left">InfluxDB</td>
+<td align="left">http_server_requests</td>
+</tr>
+</tbody></table>
+<p>所以需要一种命名转换体系将 Micrometer 中的命名转为特定系统的规范命名，Micrometer 提供了 <code>NamingConvention</code>供各系统实现，开发者可以使用以下方式自定义命名规则：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">registry.config().namingConvention(myCustomNamingConvention);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Tag"><a href="#Tag" class="headerlink" title="Tag"></a>Tag</h2><p>既然有了指标，则必然包含维度的概念，只有使用不同的维度才能对指标进行更好的区分和收集。Micrometer 中 <code>Tag</code> 就扮演了这样的角色。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">registry.counter(<span class="string">"database.calls"</span>, <span class="string">"db"</span>, <span class="string">"users"</span>) <span class="comment">// database.calls即为自行定义的指标, 而维度就是db, 含义即为db为users的数据库调用次数</span></span><br><span class="line">registry.counter(<span class="string">"http.requests"</span>, <span class="string">"uri"</span>, <span class="string">"/api/users"</span>) <span class="comment">// uri为/api/users的http请求次数</span></span><br></pre></td></tr></table></figure>
+
+<p>Tag 参数必须以 TagKey=TagValue 的方式成对出现。当命名 Tag 时，也建议使用和 Meter 一样的 dot 命名方式。同时，Tag value 必须是非空。</p>
+<p>此外，还有一种<code>Common tags</code>，对于每种 Meter，都会将 Tag 加入其中，一般用于指定 IP、实例、地区等信息，便于数据收集后进行区分。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">registry.config().commonTags(<span class="string">"stack"</span>, <span class="string">"prod"</span>, <span class="string">"region"</span>, <span class="string">"us-east-1"</span>);</span><br></pre></td></tr></table></figure>
+
+<h1 id="Meter-filters"><a href="#Meter-filters" class="headerlink" title="Meter filters"></a>Meter filters</h1><p>MeterRegistry 提供 Meter Filter，可以控制 Meter 的注册以及忽略特定统计行为。官方示例如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">registry.config()</span><br><span class="line">    .meterFilter(MeterFilter.ignoreTags(<span class="string">"too.much.information"</span>))</span><br><span class="line">    .meterFilter(MeterFilter.denyNameStartsWith(<span class="string">"jvm"</span>));</span><br></pre></td></tr></table></figure>
+
+<p>针对Filter进行简单的试验：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">SimpleMeterRegistry simple1 = <span class="keyword">new</span> SimpleMeterRegistry();</span><br><span class="line">simple1.config()</span><br><span class="line">    .meterFilter(MeterFilter.ignoreTags(<span class="string">"db2"</span>, <span class="string">"db3"</span>))</span><br><span class="line">    .meterFilter(MeterFilter.denyNameStartsWith(<span class="string">"jvm"</span>));</span><br><span class="line">Counter c1 = simple1.counter(<span class="string">"database.calls"</span>, <span class="string">"db1"</span>, <span class="string">"users"</span>);</span><br><span class="line">Counter c2 = simple1.counter(<span class="string">"database.calls"</span>, <span class="string">"db2"</span>, <span class="string">"users"</span>);</span><br><span class="line">Counter c3 = simple1.counter(<span class="string">"database.calls"</span>, <span class="string">"db3"</span>, <span class="string">"users"</span>);</span><br><span class="line">Counter c4 = simple1.counter(<span class="string">"jvm.requests"</span>, <span class="string">"uri"</span>, <span class="string">"/api/users"</span>);</span><br><span class="line">c1.increment();</span><br><span class="line">c2.increment();</span><br><span class="line">c3.increment();</span><br><span class="line">c4.increment();</span><br><span class="line"></span><br><span class="line">List&lt;Meter&gt; meters = simple1.getMeters();</span><br><span class="line"><span class="keyword">for</span> (Meter meter : meters) &#123;</span><br><span class="line"> 	 System.out.println(meter.getId() + <span class="string">" "</span> + meter.measure());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其输出结果为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MeterId&#123;name=<span class="string">'database.calls'</span>, tags=[]&#125; [Measurement&#123;statistic=<span class="string">'COUNT'</span>, value=<span class="number">2.0</span>&#125;]</span><br><span class="line">MeterId&#123;name=<span class="string">'database.calls'</span>, tags=[tag(db1=users)]&#125; [Measurement&#123;statistic=<span class="string">'COUNT'</span>, value=<span class="number">1.0</span>&#125;]</span><br></pre></td></tr></table></figure>
+
+<p>可以看见<code>jvm.requests</code>直接被过滤了，而 Tag <code>db2</code>和<code>db3</code>由于被忽略了，其值添加到了<code>name=&#39;database.calls&#39;, tags=[]</code>中，其 count值为 2.0。</p>
+<p> Meter filters 有很多复杂的功能，此处就不展开了。</p>
+<h1 id="Meter类别"><a href="#Meter类别" class="headerlink" title="Meter类别"></a>Meter类别</h1><h2 id="Counter"><a href="#Counter" class="headerlink" title="Counter"></a>Counter</h2><p>Counter 是最简单的 Meter，其含义即为单值递增计数器，值必须是正数。</p>
+<p>对于每种 Meter 而言，各有一套 fluent api 创建实例，Counter 的示例如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Counter counter = Counter</span><br><span class="line">    .builder(<span class="string">"counter"</span>)</span><br><span class="line">    .baseUnit(<span class="string">"beans"</span>) <span class="comment">// optional</span></span><br><span class="line">    .description(<span class="string">"a description of what this counter does"</span>) <span class="comment">// optional</span></span><br><span class="line">    .tags(<span class="string">"region"</span>, <span class="string">"test"</span>) <span class="comment">// optional</span></span><br><span class="line">    .register(registry);</span><br><span class="line">counter.increment();</span><br></pre></td></tr></table></figure>
+
+<p><code>FunctionCounter</code>实际上和<code>Counter</code>本身差别不大，只是将计数的行为抽象成 ToDoubleFunction 接口。 比如上下文中有一个 AtomicInteger ，那么 FunctionCounter 可以直接使用这个原子类来完成相关计数操作。这样的好处是对程序上下文而言，不需要感知该 Meter 的存在。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">MeterRegistry registry = <span class="keyword">new</span> SimpleMeterRegistry();</span><br><span class="line">AtomicInteger ai = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</span><br><span class="line">FunctionCounter counter = FunctionCounter.builder(<span class="string">"counter"</span>, ai, AtomicInteger::get)</span><br><span class="line">    .description(<span class="string">"functionCounterTest"</span>)</span><br><span class="line">    .tag(<span class="string">"region"</span>, <span class="string">"ABC"</span>)</span><br><span class="line">    .register(registry);</span><br><span class="line">ai.incrementAndGet();</span><br><span class="line">ai.incrementAndGet();</span><br><span class="line">ai.incrementAndGet();</span><br><span class="line"></span><br><span class="line">System.out.println(ai.get()); <span class="comment">// 3</span></span><br><span class="line">System.out.println(counter.measure()); <span class="comment">// [Measurement&#123;statistic='COUNT', value=3.0&#125;]</span></span><br><span class="line"></span><br><span class="line">ai.set(<span class="number">100</span>);</span><br><span class="line">System.out.println(ai.get()); <span class="comment">// 100</span></span><br><span class="line">System.out.println(counter.measure()); <span class="comment">// [Measurement&#123;statistic='COUNT', value=100.0&#125;]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Guage"><a href="#Guage" class="headerlink" title="Guage"></a>Guage</h2><p>记录指标的当前值，其典型应用是集合或Map的大小、线程的数量、CPU或内存情况。Guages 主要适用于有上边界的指标，要将其和 Counter 区分开。其Fluent Api 接口同样是将计数逻辑交给 ToDoubleFunction 接口。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">Gauge gauge = Gauge</span><br><span class="line">  .builder(<span class="string">"gauge"</span>, list, List::size)</span><br><span class="line">  .description(<span class="string">"description"</span>) <span class="comment">// optional</span></span><br><span class="line">  .tags(<span class="string">"region"</span>, <span class="string">"test"</span>) <span class="comment">// optional</span></span><br><span class="line">  .register(registry);</span><br><span class="line">System.out.println(gauge.measure());  <span class="comment">// [Measurement&#123;statistic='VALUE', value=0.0&#125;]</span></span><br><span class="line">list.add(<span class="string">""</span>);</span><br><span class="line">System.out.println(gauge.measure());  <span class="comment">// [Measurement&#123;statistic='VALUE', value=1.0&#125;]</span></span><br></pre></td></tr></table></figure>
+
+<p>官方文档中还提供了用于观察数值、集合、Map的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// &lt;T&gt; T gauge(String name, Iterable&lt;Tag&gt; tags, @Nullable T obj, ToDoubleFunction&lt;T&gt; valueFunction)</span></span><br><span class="line">List&lt;String&gt; list = registry.gauge(<span class="string">"listGauge"</span>, Collections.emptyList(), <span class="keyword">new</span> ArrayList&lt;&gt;(), List::size); </span><br><span class="line"><span class="comment">// &lt;T extends Collection&lt;?&gt;&gt; T gaugeCollectionSize(String name, Iterable&lt;Tag&gt; tags, T collection)</span></span><br><span class="line">List&lt;String&gt; list2 = registry.gaugeCollectionSize(<span class="string">"listSize2"</span>, Tags.empty(), <span class="keyword">new</span> ArrayList&lt;&gt;()); </span><br><span class="line"><span class="comment">// &lt;T extends Map&lt;?, ?&gt;&gt; T gaugeMapSize(String name, Iterable&lt;Tag&gt; tags, T map)</span></span><br><span class="line">Map&lt;String, Integer&gt; map = registry.gaugeMapSize(<span class="string">"mapGauge"</span>, Tags.empty(), <span class="keyword">new</span> HashMap&lt;&gt;());</span><br></pre></td></tr></table></figure>
+
+<p>Micrometer 默认是不会创建对象的强引用（可以观察抽象类 MeterRegistry 的 newGauge 具体实现），如果 Guage 值无法观察到，那可能是对象已被执行垃圾回收。</p>
+<h2 id="Timer"><a href="#Timer" class="headerlink" title="Timer"></a>Timer</h2><p>Timer 用于记录时间相对较短的事件延迟情况和事件发生的频率，Timer 的所有实现至少记录了事件总时间消耗以及次数。以记录请求延时情况为例，由于可能瞬时记录大量信息，所以Timer每秒将更新很多次。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Timer timer = Timer</span><br><span class="line">    .builder(<span class="string">"my.timer"</span>)</span><br><span class="line">    .description(<span class="string">"a description of what this timer does"</span>) <span class="comment">// optional</span></span><br><span class="line">    .tags(<span class="string">"region"</span>, <span class="string">"test"</span>) <span class="comment">// optional</span></span><br><span class="line">    .register(registry);</span><br><span class="line">timer.record(<span class="number">12</span>, TimeUnit.SECONDS);</span><br><span class="line">timer.record(<span class="number">2</span>, TimeUnit.SECONDS);</span><br><span class="line">timer.record(<span class="number">23</span>, TimeUnit.SECONDS);</span><br><span class="line">System.out.println(timer.measure()); <span class="comment">// [Measurement&#123;statistic='COUNT', value=3.0&#125;, Measurement&#123;statistic='TOTAL_TIME', value=37.0&#125;, Measurement&#123;statistic='MAX', value=23.0&#125;]</span></span><br></pre></td></tr></table></figure>
+
+<p>Timer 可以记录代码的执行耗时，其接收 Runnable 以及 Callable 参数。这个可以按照实际需要决定是否需要，个人不喜欢将执行代码的线程更换掉（还得考虑ThreadLocal及其他上下文情况），但不否认其拥有应用场景。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">timer.record(() -&gt; dontCareAboutReturnValue());</span><br><span class="line">timer.recordCallable(() -&gt; returnValue());</span><br><span class="line"></span><br><span class="line">Runnable r = timer.wrap(() -&gt; dontCareAboutReturnValue());</span><br><span class="line">Callable c = timer.wrap(() -&gt; returnValue());</span><br></pre></td></tr></table></figure>
+
+<p>Timer 还有个内部类<code>Timer.Sample</code>，可以通过手动调用 start 和 stop 记录执行情况：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Timer.Sample sample = Timer.start(registry);</span><br><span class="line"><span class="comment">// do stuff</span></span><br><span class="line">Response response = ...</span><br><span class="line">sample.stop(registry.timer(<span class="string">"my.timer"</span>, <span class="string">"response"</span>, response.status()));</span><br></pre></td></tr></table></figure>
+
+<h2 id="Distribution-summaries"><a href="#Distribution-summaries" class="headerlink" title="Distribution summaries"></a>Distribution summaries</h2><p>distribution summary 用来追踪事件的分布情况，其结构和 Timer 类似，但是其值不是由时间单位表示，也可以认为 Timer 只是特例化的 distribution summary ，但是 Micrometer 会针对监控系统自动适配存放时间序列的基本单位，所以只要是关于时间的指标，官方建议都使用 Timer。</p>
+<p>官方示例的 Fluent API 使用如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">DistributionSummary summary = DistributionSummary</span><br><span class="line">    .builder(<span class="string">"response.size"</span>)</span><br><span class="line">    .description(<span class="string">"a description of what this summary does"</span>) <span class="comment">// optional</span></span><br><span class="line">    .baseUnit(<span class="string">"bytes"</span>) <span class="comment">// optional (1)</span></span><br><span class="line">    .tags(<span class="string">"region"</span>, <span class="string">"test"</span>) <span class="comment">// optional</span></span><br><span class="line">    .scale(<span class="number">100</span>) <span class="comment">// optional (2)</span></span><br><span class="line">    .register(registry);</span><br></pre></td></tr></table></figure>
+
+<p>添加 baseUnit 可以进一步提升整体的可移植性，因为 baseUnit 本身是监控系统命名转换的一部分，但如果省略它，也不会有负面影响。scale 作为比例因子，用来乘以所有的记录值。</p>
+<p>Timers 和 distribution summaries 都支持收集数据后观察比例分布信息，有两种使用形式：一是直方图(histogram)，即分配一堆桶，观察数据在各个桶的分布情况；二是百分比(percentiles)，系统会为每一个 Meter 计算一个百分比近似值。以下面这个分布摘要在 Prometheus 中的展示为例：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">DistributionSummary summary = DistributionSummary.builder(<span class="string">"ds.test"</span>)</span><br><span class="line">    .description(<span class="string">"simple distribution summary"</span>)</span><br><span class="line">    .publishPercentiles(<span class="number">0.5</span>, <span class="number">0.6</span>, <span class="number">0.95</span>)</span><br><span class="line">    .publishPercentileHistogram()</span><br><span class="line">    .minimumExpectedValue(<span class="number">1</span>L)</span><br><span class="line">    .maximumExpectedValue(<span class="number">30</span>L)</span><br><span class="line">    .register(meterRegistry);</span><br><span class="line">summary.record(<span class="number">2</span>);</span><br><span class="line">summary.record(<span class="number">2</span>);</span><br><span class="line">summary.record(<span class="number">2</span>);</span><br><span class="line">summary.record(<span class="number">2</span>);</span><br><span class="line">summary.record(<span class="number">2</span>);</span><br><span class="line">summary.record(<span class="number">5</span>);</span><br><span class="line">summary.record(<span class="number">5</span>);</span><br><span class="line">summary.record(<span class="number">5</span>);</span><br><span class="line">summary.record(<span class="number">5</span>);</span><br><span class="line">summary.record(<span class="number">9</span>);</span><br></pre></td></tr></table></figure>
+
+<p>除了 max / count / sum 这三种数据外，还会显示 quantile 信息以及直方图的桶信息。<code>publishPercentiles</code>即表示记录百分位数值，<code>publishPercentileHistogram</code>表示记录直方图信息，而桶的个数可以由<code>minimumExpectedValue</code>和<code>maximumExpectedValue</code>控制。</p>
+<img src="https://i.loli.net/2019/12/02/q4XJwbkKpGRVMuB.png" width="400" align="center">
+
+<p>此外，还有一个<code>sla</code>方法，包含的桶信息会包含 sla 指定的数值。举例而言，下方的图中就包含了 18 和 19 两个桶。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DistributionSummary summary = DistributionSummary.builder(<span class="string">"ds.test"</span>)</span><br><span class="line">        .description(<span class="string">"simple distribution summary"</span>)</span><br><span class="line">        .publishPercentiles(<span class="number">0.5</span>, <span class="number">0.6</span>, <span class="number">0.95</span>)</span><br><span class="line">        .publishPercentileHistogram()</span><br><span class="line">        .minimumExpectedValue(<span class="number">1L</span>)</span><br><span class="line">        .maximumExpectedValue(<span class="number">30L</span>)</span><br><span class="line">        .sla(<span class="number">18</span>, <span class="number">19</span>)</span><br><span class="line">        .register(meterRegistry);</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2019/12/02/YNKDi9RaFgqby3X.png" width="400" align="center">
+
+
+
+<p>Timer 的 Histogram 和 Percentiles 使用也完全类似：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Timer timer = Timer.builder(<span class="string">"my.timer"</span>)</span><br><span class="line">    .publishPercentiles(<span class="number">0.5</span>, <span class="number">0.95</span>)</span><br><span class="line">    .publishPercentileHistogram()</span><br><span class="line">    .sla(Duration.ofMillis(<span class="number">200</span>))</span><br><span class="line">    .minimumExpectedValue(Duration.ofMillis(<span class="number">1</span>))</span><br><span class="line">    .maximumExpectedValue(Duration.ofSeconds(<span class="number">1</span>))</span><br><span class="line">    .register(meterRegistry);</span><br><span class="line">timer.record(<span class="number">8</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">9</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">7</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">8</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">58</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">56</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">157</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">299</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">599</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">timer.record(<span class="number">1999</span>, TimeUnit.MILLISECONDS);</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2019/12/02/QBCfd7TKbGuXALn.png" width="400" align="center">
+
+
+
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>简单吐槽一下，相同名称、不同 Tag 的数据不能聚和，其设计初衷可能就是让数据由上层应用处理。 Actuator 的 <code>/metrics/logback.events</code> 接口，对应的 Meter 是<code>LogbackMetrics</code>，可以看到内部 Meter 命名相同，但 Tag 不同。但是这个 uri 显示的 measurements 是聚和的，开始我以为有没发现的 API 操作，查看<code>MetricsEndpoint</code>后发现，聚和操作也是由该类自己完成的。</p>
+<hr>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://micrometer.io/docs/concepts" target="_blank" rel="noopener">https://micrometer.io/docs/concepts</a></p>
+<p><a href="https://www.throwable.club/2018/11/17/jvm-micrometer-prometheus/" target="_blank" rel="noopener">https://www.throwable.club/2018/11/17/jvm-micrometer-prometheus/</a></p>
+<p><a href="http://yongyao.li/blog/article/使用micrometer进行业务指标上报" target="_blank" rel="noopener">http://yongyao.li/blog/article/使用micrometer进行业务指标上报</a></p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2019/12/08/指标监控-2-云原生监控系统-Prometheus/" title= "[指标监控] 云原生监控系统 Prometheus">
+                    <div class="nextTitle">[指标监控] 云原生监控系统 Prometheus</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/10/08/并发札记-8-原子操作类/" title= "[回顾并发基础] 原子操作类">
+                    <div class="prevTitle">[回顾并发基础] 原子操作类</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#介绍"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Registry"><span class="toc-number">2.</span> <span class="toc-text">Registry</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#命名"><span class="toc-number">3.</span> <span class="toc-text">命名</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Meter"><span class="toc-number">3.1.</span> <span class="toc-text">Meter</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tag"><span class="toc-number">3.2.</span> <span class="toc-text">Tag</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Meter-filters"><span class="toc-number">4.</span> <span class="toc-text">Meter filters</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Meter类别"><span class="toc-number">5.</span> <span class="toc-text">Meter类别</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Counter"><span class="toc-number">5.1.</span> <span class="toc-text">Counter</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Guage"><span class="toc-number">5.2.</span> <span class="toc-text">Guage</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Timer"><span class="toc-number">5.3.</span> <span class="toc-text">Timer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Distribution-summaries"><span class="toc-number">5.4.</span> <span class="toc-text">Distribution summaries</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">5.5.</span> <span class="toc-text">其他</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-number">6.</span> <span class="toc-text">Reference</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 42
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite 1 - CSV Adapter</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href= "/2020/01/06/大数据入门草稿-Hive/" >大数据入门草稿 - Hive</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span><a class="archive-post-title" href= "/2019/12/18/HikariCP-2-HikariCP-配置项/" >[HikariCP] HikariCP 配置项 </a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span><a class="archive-post-title" href= "/2019/12/16/大数据入门草稿-Hadoop/" >大数据入门草稿 - Hadoop</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span><a class="archive-post-title" href= "/2019/12/08/指标监控-2-云原生监控系统-Prometheus/" >[指标监控] 云原生监控系统 Prometheus</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/29</span><a class="archive-post-title" href= "/2019/11/29/指标监控-1-JVM-指标框架-Micrometer/" >[指标监控] JVM 指标框架 Micrometer</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2019/10/08/并发札记-8-原子操作类/" >[回顾并发基础] 原子操作类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2019/10/05/并发札记-7-JUC中的并发队列/" >[回顾并发基础] JUC中的并发队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/04</span><a class="archive-post-title" href= "/2019/10/04/HikariCP-1-高性能的秘密/" >[HikariCP] HikariCP为什么快</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/03</span><a class="archive-post-title" href= "/2019/10/03/HikariCP-0-DBPool & JDBC基础/" >[HikariCP] DBPool & JDBC基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-4-常用Lock实现类/" >[回顾并发基础] ReentrantLock & ReentrantReadWriteLock & StampedLock</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-5-常用并发工具类/" >[回顾并发基础] 常用并发工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span><a class="archive-post-title" href= "/2019/09/21/Java并发札记-3-Lock & AQS/" >[回顾并发基础] Lock & AQS</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2019/09/11/使用ClassLoader在SpringBoot打包文件中获取嵌套jar/" >使用自定义ClassLoader加载SpringBoot打包文件中嵌套jar驱动</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2019/09/07/JVM-类加载机制/" >JVM 类加载机制解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2019/08/24/Java并发札记-0-并发问题的根源/" >[回顾并发基础] 并发问题的根源</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" >Spring Data Redis 实践 (v2.1.7)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" >[Leetcode单排] 二叉树的序列化与反序列化 (N297)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2019/08/10/Leetcode单排- 树类题目集合1-N102-N107-N429-N872-N112-N113/" >[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树相关Easy题-N100-N101-N104-N110-N111-N572-N965/" >[Leetcode单排] 树相关Easy题 (N100 N101 N104 N110 N111 N572 N965)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >[Leetcode单排] 树的遍历 (N94 N589 N590)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >[Leetcode单排] 划分为k个相等的子集 (N698)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-01矩阵-N542/" >[Leetcode单排] 01矩阵 (N542)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >[Leetcode单排] 运算表达式设优先级求值 (N241)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-分割回文串-N131/" >[Leetcode单排] 分割回文串 (N131)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" >[Leetcode单排] 复原IP地址 (N93)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2019/08/01/Leetcode单排-单词接龙-N127/" >[Leetcode单排] 单词接龙 (N127)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span><a class="archive-post-title" href= "/2019/07/31/Clojure-in-Action-Clojure-构件/" >Clojure in Action: Clojure 构件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >[Leetcode单排] 单词搜索 (N79 N212)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="connection-pool"><span class="iconfont-archer">&#xe606;</span>connection-pool</span>
+    
+        <span class="sidebar-tag-name" data-tags="db"><span class="iconfont-archer">&#xe606;</span>db</span>
+    
+        <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+        <span class="sidebar-tag-name" data-tags="cache"><span class="iconfont-archer">&#xe606;</span>cache</span>
+    
+        <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="metrics"><span class="iconfont-archer">&#xe606;</span>metrics</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+        <span class="sidebar-category-name" data-categories="BigData"><span class="iconfont-archer">&#xe60a;</span>BigData</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

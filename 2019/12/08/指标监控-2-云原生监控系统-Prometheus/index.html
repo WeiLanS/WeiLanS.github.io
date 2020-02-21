@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>[指标监控] 云原生监控系统 Prometheus · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">[指标监控] 云原生监控系统 Prometheus</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/q6/wallhaven-q6omvd.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [指标监控] 云原生监控系统 Prometheus
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "metrics">metrics</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.9k</span>阅读时长: <span class="post-count reading-time">15 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/12/08</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>Prometheus 作为当前炙手可热的云原生监控系统，是继 Kubernetes 之后第二个加入云原生计算基金会的成员。其安装及使用也是相当便捷，有强大的扩展性和集成性，查询语言 PromQL 可以轻松完成指标数据的查询与聚和。</p>
+</blockquote>
+<a id="more"></a>
+
+<h1 id="监控的目标"><a href="#监控的目标" class="headerlink" title="监控的目标"></a>监控的目标</h1><p>《SRE: Google运维解密》一书中指出，监控系统需要能够有效的支持<strong>白盒监控</strong>和<strong>黑盒监控</strong>：通过白盒能够了解其内部的实际运行状态，通过对监控指标的观察能够预判可能出现的问题，从而对潜在的不确定因素进行优化。而黑盒监控，常见的如HTTP探针，TCP探针等，可以在系统或者服务在发生故障时能够快速通知相关的人员进行处理。通过建立完善的监控体系，从而达到以下目的：</p>
+<ul>
+<li><p>长期趋势分析：通过对监控样本数据的持续收集和统计，对监控指标进行长期趋势分析。例如，通过对磁盘空间增长率的判断，我们可以提前预测在未来什么时间节点上需要对资源进行扩容。</p>
+</li>
+<li><p>对照分析：两个版本的系统运行资源使用情况的差异如何？在不同容量情况下系统的并发和负载变化如何？通过监控能够方便的对系统进行跟踪和比较。</p>
+</li>
+<li><p>告警：当系统出现或者即将出现故障时，监控系统需要迅速反应并通知管理员，从而能够对问题进行快速的处理或者提前预防问题的发生，避免出现对业务的影响。</p>
+</li>
+<li><p>故障分析与定位：当问题发生后，需要对问题进行调查和处理。通过对不同监控监控以及历史数据的分析，能够找到并解决根源问题。</p>
+</li>
+<li><p>数据可视化：通过可视化仪表盘能够直接获取系统的运行状态、资源使用情况、以及服务运行状态等直观的信息。</p>
+</li>
+</ul>
+<h1 id="为什么使用-Prometheus"><a href="#为什么使用-Prometheus" class="headerlink" title="为什么使用 Prometheus"></a>为什么使用 Prometheus</h1><ul>
+<li><p>Prometheus核心部分只有一个单独的二进制文件，不存在任何的第三方依赖(数据库，缓存等等)。唯一需要的就是本地磁盘，因此不会有潜在级联故障的风险。(Prometheus 不仅仅是一个监控系统，同时也是一个时序数据库，Prometheus 不直接使用现有的时序数据库作为后端存储，就是希望监控系统有着时序数据库的特点，而且还需要部署和维护非常方便)</p>
+</li>
+<li><p>Prometheus基于 Pull 模型的架构方式，可以在任何地方搭建我们的监控系统。对于一些复杂的情况，还可以使用Prometheus服务发现(Service Discovery)的能力动态管理监控目标。</p>
+</li>
+<li><p>拥有多维度数据模型：所有采集的监控数据均以指标(metric)的形式保存在内置的时间序列数据库当中(TSDB)。所有的样本除了基本的指标名称以外，还包含一组用于描述该样本特征的标签，一个时间序列由一个度量指标和多个标签值确定。</p>
+</li>
+<li><p>强大的查询语言 PromQL：Prometheus 内置了一个强大的数据查询语言 PromQL。 通过 PromQL 可以实现对监控数据的查询、聚合。同时 PromQL 也被应用于数据可视化(如Grafana)以及告警当中。通过PromQL可以轻松回答类似于以下问题：</p>
+<ul>
+<li>在过去一段时间中95%应用延迟时间的分布范围？</li>
+<li>预测在4小时后，磁盘空间占用大致会是什么情况？</li>
+<li>CPU占用率前5位的服务有哪些？(过滤)</li>
+</ul>
+</li>
+<li><p>Prometheus可以高效地处理这些数据，对于单一 Prometheus Server 实例而言它可以处理：数以百万的监控指标；每秒处理数十万的数据点。</p>
+</li>
+<li><p>扩展性：每个数据中心、每个团队都可以运行独立的 Prometheus Sevrer。Prometheus 对于联邦集群的支持，可以让多个Prometheus实例产生一个逻辑集群，当单实例 Prometheus Server 处理的任务量过大时，通过使用 功能分区(sharding) + 联邦集群(federation) 可以对其进行扩展。</p>
+</li>
+<li><p>易于集成：支持<a href="https://prometheus.io/docs/instrumenting/clientlibs/" target="_blank" rel="noopener">多种语言客户端</a>，基于这些SDK可以快速让应用程序纳入到Prometheus的监控当中，或者开发自己的监控数据收集程序。此外，还提供大量第三方提供的数据采集<a href="https://prometheus.io/docs/instrumenting/exporters/" target="_blank" rel="noopener">Exporters</a>，比如：Oracle DB Exporter、PostgreSQL exporter、Redis exporter、NVIDIA GPU exporter、RabbitMQ exporter、Nginx metric library、JMX exporter等。</p>
+</li>
+</ul>
+<h1 id="安装-Prometheus-Server"><a href="#安装-Prometheus-Server" class="headerlink" title="安装 Prometheus Server"></a>安装 Prometheus Server</h1><p><a href="https://hub.docker.com/r/prom/prometheus" target="_blank" rel="noopener">docker</a> 安装 Prometheus Server：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 9090:9090 -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus</span><br></pre></td></tr></table></figure>
+
+<p>打开 <a href="http://127.0.0.1:9090/" target="_blank" rel="noopener">http://127.0.0.1:9090/</a> 就可以看到 Prometheus 主页了。</p>
+<p>也可以直接下载安装包，解压后执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./prometheus --config.file=prometheus.yml</span><br></pre></td></tr></table></figure>
+
+<p>在Prometheus的架构设计中，Prometheus Server 并不直接服务监控特定的目标，其主要任务负责数据的收集，存储并且对外提供数据查询支持。因此为了能够能够监控到某些东西，如主机的CPU使用率，我们需要使用到Exporter。为了能够采集到主机的运行指标如CPU, 内存，磁盘等信息，可以使用 <a href="https://github.com/prometheus/node_exporter/releases" target="_blank" rel="noopener">Node Exporter</a>。直接运行<code>node_exporter</code>，打开9100端口，在 <a href="http://localhost:9100/metrics" target="_blank" rel="noopener">http://localhost:9100/metrics</a> 就可以看到相关信息。</p>
+<p>想要主动拉取 Node 信息，需要配置 prometheus.yml，job_name 为 prometheus 为其自带的，暂且不管。metrics_path 默认为 /metrics，对于后续监控自己的系统，想要更改path，即添加或更改此属性。在下方新增 node job_name 启动后，就可以在 Prometheus 首页的 Expression 处搜索到 Node 信息了。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">'prometheus'</span></span><br><span class="line">    <span class="attr">static_configs:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">targets:</span> <span class="string">['localhost:9090']</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">'node'</span></span><br><span class="line">    <span class="attr">static_configs:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">targets:</span> <span class="string">['localhost:9100']</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Prometheus-架构"><a href="#Prometheus-架构" class="headerlink" title="Prometheus 架构"></a>Prometheus 架构</h1><img src="https://prometheus.io/assets/architecture.png" align="center" width="800">
+
+<p>中间最核心的就是 Prometheus Server，最重要的功能就是数据的获取，主要是以 pull 的方式从 Jobs、Exporters 拉取，而寿命周期短的任务则可以存放数据至 Pushgateway 网关，再由 Prometheus Server 定期从网关中拉取。也可以通过 Service Discovery 发现需要主动监控的访问（当要监控特别多的节点，而这些节点也是动态变化的，可以采用这种方式） 。 Prometheus Server 会将数据存储存储在磁盘上，并对外暴露 HTTP 服务，供外部客户端进行 PromQL 查询。</p>
+<p>此外，还可以配置一些报警条件，当条件满足时，报警信息会以 push 的方式推至 Alertmanager，由 Alertmanager 处理告警的通知（当然，实际的告警是 Prometheus 产生的），比如告警去重后以短信或者邮件的方式进行通知。</p>
+<h1 id="Prometheus-核心概念"><a href="#Prometheus-核心概念" class="headerlink" title="Prometheus 核心概念"></a>Prometheus 核心概念</h1><h3 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h3><ul>
+<li><p>Metric names and labels 指标名称及标签：每个时间序列由其指标名称和称为标签的可选键值对来进行唯一标识。</p>
+</li>
+<li><p>Sample 采样值：时序序列的数据即是样本，每个样本是一个float64数值，或者是一个精确到毫秒的时间戳。</p>
+</li>
+<li><p>Notation 标记/注解：实际上就是指标和标签组合的时间序列表示：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;metric name&gt;&#123;&lt;label name&gt;=&lt;label value&gt;, ...&#125;</span><br><span class="line">api_http_requests_total&#123;method=<span class="string">"POST"</span>, handler=<span class="string">"/messages"</span>&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="度量指标"><a href="#度量指标" class="headerlink" title="度量指标"></a>度量指标</h3><ul>
+<li><p>Counter 计数器 ： 是一个累计的指标，表示一个单调递增的计数器，比如用于任务请求数、成功或失败的任务数等。</p>
+</li>
+<li><p>Gauge 计量器：是一个数值可以上下移动的指标。</p>
+</li>
+<li><p>Histogram 直方图：主要用于采样分析，将范围分成一个个的桶，将数值放入桶中进行分布情况分析。</p>
+</li>
+<li><p>Summary 汇总：与 Histogram 类似，主要提供百分比分布情况。</p>
+</li>
+</ul>
+<h3 id="任务和实例"><a href="#任务和实例" class="headerlink" title="任务和实例"></a>任务和实例</h3><p>任务 Job、实例 Instance </p>
+<p>一个任务可能有多个实例，比如要应用的某个指标，可以为这个应用建一个 Job，该应用可以有多台服务器，即有多个 Instance。当前在每一个Job中主要使用了静态配置(static_configs)的方式定义监控目标。除了静态配置每一个Job的采集Instance地址以外，Prometheus还支持与DNS、Consul、E2C、Kubernetes等进行集成实现自动发现Instance实例，并从这些Instance上获取监控数据。访问 /target 直接从Prometheus的UI中查看当前所有的任务以及每个任务对应的实例信息。</p>
+<p>Prometheus 抓取采样值后，会自动给采样值添加一下标签和值：job 抓取所属任务、instance 抓取来源实例。</p>
+<p>另外每次抓取时，Prometheus 还会自动在以下时序里插入采样值：</p>
+<ul>
+<li><p><code>up{job=&quot;&quot;, instance=&quot;&quot;}</code>: <code>1</code> if the instance is healthy, i.e. reachable, or <code>0</code> if the scrape failed.</p>
+</li>
+<li><p><code>scrape_duration_seconds{job=&quot;&quot;, instance=&quot;&quot;}</code>: duration of the scrape.</p>
+</li>
+<li><p><code>scrape_samples_post_metric_relabeling{job=&quot;&quot;, instance=&quot;&quot;}</code>: the number of samples remaining after metric relabeling was applied.</p>
+</li>
+<li><p><code>scrape_samples_scraped{job=&quot;&quot;, instance=&quot;&quot;}</code>: the number of samples the target exposed.</p>
+</li>
+<li><p><code>scrape_series_added{job=&quot;&quot;, instance=&quot;&quot;}</code>: the approximate number of new series in this scrape. <em>New in v2.10</em></p>
+</li>
+</ul>
+<h1 id="Prometheus-配置"><a href="#Prometheus-配置" class="headerlink" title="Prometheus 配置"></a>Prometheus 配置</h1><p><a href="https://prometheus.io/docs/prometheus/latest/configuration/configuration/" target="_blank" rel="noopener">完整配置文档</a></p>
+<p>prometheus.yml 文件内容：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">global:</span>  <span class="comment"># 全局配置，全局节点的配置对其他所有节点都有效，同时也是其他节点的默认值</span></span><br><span class="line">  <span class="attr">scrape_interval:</span>     <span class="string">15s</span> <span class="comment"># 抓取间隔 默认1min</span></span><br><span class="line">  <span class="attr">evaluation_interval:</span> <span class="string">15s</span> <span class="comment"># 规则评估间隔 默认1min</span></span><br><span class="line">  <span class="comment"># scrape_timeout  # 抓取超时时间 默认10s</span></span><br><span class="line"> </span><br><span class="line"><span class="attr">alerting:</span> <span class="comment"># Alertmanager 的配置</span></span><br><span class="line">  <span class="attr">alertmanagers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">static_configs:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">targets:</span></span><br><span class="line">      <span class="comment"># - alertmanager:9093</span></span><br><span class="line"> </span><br><span class="line"><span class="attr">rule_files:</span> <span class="comment"># 记录规则配置和告警规则配置</span></span><br><span class="line">  <span class="comment"># - "first_rules.yml"</span></span><br><span class="line">  <span class="comment"># - "second_rules.yml"</span></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"><span class="attr">scrape_configs:</span> <span class="comment"># 抓取配置</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">'prometheus'</span></span><br><span class="line"> </span><br><span class="line">    <span class="comment"># metrics_path defaults to '/metrics'</span></span><br><span class="line">    <span class="comment"># scheme defaults to 'http'.</span></span><br><span class="line"> </span><br><span class="line">    <span class="attr">static_configs:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">targets:</span> <span class="string">['localhost:9090']</span></span><br></pre></td></tr></table></figure>
+
+<p>抓取配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 任务名</span></span><br><span class="line"><span class="attr">job_name:</span> <span class="string">&lt;job_name&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 抓取间隔，默认为全局配饰</span></span><br><span class="line"><span class="string">[</span> <span class="attr">scrape_interval:</span> <span class="string">&lt;duration&gt;</span> <span class="string">|</span> <span class="string">default</span> <span class="string">=</span> <span class="string">&lt;global_config.scrape_interval&gt;</span> <span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 抓取超时时间，默认为全局配饰</span></span><br><span class="line"><span class="string">[</span> <span class="attr">scrape_timeout:</span> <span class="string">&lt;duration&gt;</span> <span class="string">|</span> <span class="string">default</span> <span class="string">=</span> <span class="string">&lt;global_config.scrape_timeout&gt;</span> <span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 抓取地址的路径，默认为/metrics</span></span><br><span class="line"><span class="string">[</span> <span class="attr">metrics_path:</span> <span class="string">&lt;path&gt;</span> <span class="string">|</span> <span class="string">default</span> <span class="string">=</span> <span class="string">/metrics</span> <span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 是否尊重抓取回来的标签</span></span><br><span class="line"><span class="string">[</span> <span class="attr">honor_labels:</span> <span class="string">&lt;boolean&gt;</span> <span class="string">|</span> <span class="string">default</span> <span class="string">=</span> <span class="literal">false</span> <span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 协议，默认http，可选https</span></span><br><span class="line"><span class="string">[</span> <span class="attr">scheme:</span> <span class="string">&lt;scheme&gt;</span> <span class="string">|</span> <span class="string">default</span> <span class="string">=</span> <span class="string">http</span> <span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 抓取地址的参数</span></span><br><span class="line"><span class="attr">params:</span></span><br><span class="line">  <span class="string">[</span> <span class="string">&lt;string&gt;:</span> <span class="string">[&lt;string&gt;,</span> <span class="string">...]</span> <span class="string">]</span></span><br><span class="line">  </span><br><span class="line"><span class="comment"># 目标配置  </span></span><br><span class="line"><span class="attr">static_configs:</span></span><br><span class="line">  <span class="string">[</span> <span class="bullet">-</span> <span class="string">&lt;static_config&gt;</span> <span class="string">...</span> <span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Sets the `Authorization` header on every scrape request with the</span></span><br><span class="line"><span class="comment"># configured username and password.</span></span><br><span class="line"><span class="comment"># password and password_file are mutually exclusive.</span></span><br><span class="line"><span class="attr">basic_auth:</span></span><br><span class="line">  <span class="string">[</span> <span class="attr">username:</span> <span class="string">&lt;string&gt;</span> <span class="string">]</span></span><br><span class="line">  <span class="string">[</span> <span class="attr">password:</span> <span class="string">&lt;secret&gt;</span> <span class="string">]</span></span><br><span class="line">  <span class="string">[</span> <span class="attr">password_file:</span> <span class="string">&lt;string&gt;</span> <span class="string">]</span></span><br></pre></td></tr></table></figure>
+
+<p><static_config>：</static_config></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 目标地址列表</span></span><br><span class="line"><span class="attr">targets:</span></span><br><span class="line">  <span class="string">[</span> <span class="bullet">-</span> <span class="string">'&lt;host&gt;'</span> <span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 标签列表</span></span><br><span class="line"><span class="attr">labels:</span></span><br><span class="line">  <span class="string">[</span> <span class="string">&lt;labelname&gt;:</span> <span class="string">&lt;labelvalue&gt;</span> <span class="string">...</span> <span class="string">]</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="PromQL"><a href="#PromQL" class="headerlink" title="PromQL"></a>PromQL</h1><h2 id="PromQL-语法数据类型"><a href="#PromQL-语法数据类型" class="headerlink" title="PromQL 语法数据类型"></a>PromQL 语法数据类型</h2><ul>
+<li><code>Instant vector 瞬时向量</code>： 一组时序，每个时序只有一个采样值</li>
+<li><code>Range vector 区间向量</code>：一组时序，每个时序包含一段时间内的多个采样值</li>
+<li><code>Scalar 标量</code>：一个浮点数</li>
+<li><code>String 字符串</code>：一个字符串，暂时未用</li>
+</ul>
+<h2 id="时序选择器"><a href="#时序选择器" class="headerlink" title="时序选择器"></a><a href="https://prometheus.io/docs/prometheus/latest/querying/basics/#time-series-selectors" target="_blank" rel="noopener">时序选择器</a></h2><h3 id="瞬时向量选择器"><a href="#瞬时向量选择器" class="headerlink" title="瞬时向量选择器"></a>瞬时向量选择器</h3><p>选择一组时序在某个采用点的采样值。最简单的情况就是指定一个指标，选择出所有属于该度量指标的时序的当前采样值。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_requests_total</span><br></pre></td></tr></table></figure>
+
+<p>可以在后面添加用大括号包围起来的一组标签键值对来对时序进行过滤：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_requests_total&#123;job=<span class="string">"prometheus"</span>,group=<span class="string">"canary"</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>标签匹配时，可以使用值，也可以使用正则表达式，匹配操作符有如下四种：</p>
+<ul>
+<li><code>=</code>: Select labels that are exactly equal to the provided string.</li>
+<li><code>!=</code>: Select labels that are not equal to the provided string.</li>
+<li><code>=~</code>: Select labels that regex-match the provided string.</li>
+<li><code>!~</code>: Select labels that do not regex-match the provided string.</li>
+</ul>
+<p>示例如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_requests_total&#123;environment=~<span class="string">"staging|testing|development"</span>,method!=<span class="string">"GET"</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>度量指标名称也可以使用使用内部标签<code>__name__</code>表示，表达式 <code>http_requests_total</code> 也可以写成 <code>{__name__=&quot;http_requests_total&quot;}</code>。表达式<code>{__name__=~&quot;customized.*&quot;}</code>匹配所有指标名称以<code>customized</code>打头的时序。</strong></p>
+<h3 id="区间向量选择器"><a href="#区间向量选择器" class="headerlink" title="区间向量选择器"></a>区间向量选择器</h3><p>与瞬时向量选择器不同的是，会在后面加上中括号包起来的指定区间长度：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_requests_total&#123;job=<span class="string">"prometheus"</span>&#125;[5m]</span><br></pre></td></tr></table></figure>
+
+<p>时长单位为以下几种：</p>
+<ul>
+<li><code>s</code> - seconds</li>
+<li><code>m</code> - minutes</li>
+<li><code>h</code> - hours</li>
+<li><code>d</code> - days</li>
+<li><code>w</code> - weeks</li>
+<li><code>y</code> - years</li>
+</ul>
+<h3 id="偏移修饰器"><a href="#偏移修饰器" class="headerlink" title="偏移修饰器"></a>偏移修饰器</h3><p>上两种选择器是是当前时间或从当前时间倒推的，若需要选择过去时间点或过去时间点倒推的，则使用偏移修饰器。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 指标名称为 http_requests_total 的所有时序在5分钟前的采样值</span><br><span class="line">http_requests_total offset 5m</span><br><span class="line"></span><br><span class="line"># 指标名称为 http_requests_total 的在一周前的这个时间点过去5分钟的采样值</span><br><span class="line">http_requests_total[5m] offset 1w</span><br></pre></td></tr></table></figure>
+
+<h2 id="二元操作符"><a href="#二元操作符" class="headerlink" title="二元操作符"></a><a href="https://prometheus.io/docs/prometheus/latest/querying/operators/#binary-operators" target="_blank" rel="noopener">二元操作符</a></h2><ul>
+<li><code>+</code> (addition)</li>
+<li><code>-</code> (subtraction)</li>
+<li><code>*</code> (multiplication)</li>
+<li><code>/</code> (division)</li>
+<li><code>%</code> (modulo)</li>
+<li><code>^</code> (power/exponentiation)</li>
+</ul>
+<p>传统二元运算符用在标量和标量之间，而这里可以用在向量和标量、向量和向量之间。二元操作符里的向量特指瞬时向量，不包含区间向量。</p>
+<ul>
+<li><p>标量与标量：通常的算术运算。</p>
+</li>
+<li><p>向量与标量：把标量与向量里的每一个标量进行运算，结果组成一个新向量</p>
+</li>
+<li><p>向量与向量：左边向量里的每一个元素在右边向量里去找一个匹配元素（见向量匹配规则），然后两个匹配元素执行计算，计算结果组成一个新的向量。如果没有找到匹配元素，则该元素丢弃。</p>
+</li>
+</ul>
+<p>![image-20191219181408718](/Users/john/Library/Application Support/typora-user-images/image-20191219181408718.png)</p>
+<h2 id="向量匹配规则"><a href="#向量匹配规则" class="headerlink" title="向量匹配规则"></a><a href="https://prometheus.io/docs/prometheus/latest/querying/operators/#vector-matching" target="_blank" rel="noopener">向量匹配规则</a></h2><p>有两种匹配规则：<code>one-to-one</code>，<code>one-to-many</code>/<code>many-to-to</code>：</p>
+<p>one-to-one：左边的向量的元素匹配到唯一一个右边元素。看标签键值对是否匹配（不看指标名称），<code>ignoring</code>忽略标签不参与匹配的标签，<code>on</code>指定参与匹配的标签。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">method_code:http_errors:rate5m&#123;method=<span class="string">"get"</span>, code=<span class="string">"500"</span>&#125;  24</span><br><span class="line">method_code:http_errors:rate5m&#123;method=<span class="string">"get"</span>, code=<span class="string">"404"</span>&#125;  30</span><br><span class="line">method_code:http_errors:rate5m&#123;method=<span class="string">"put"</span>, code=<span class="string">"501"</span>&#125;  3</span><br><span class="line">method_code:http_errors:rate5m&#123;method=<span class="string">"post"</span>, code=<span class="string">"500"</span>&#125; 6</span><br><span class="line">method_code:http_errors:rate5m&#123;method=<span class="string">"post"</span>, code=<span class="string">"404"</span>&#125; 21</span><br><span class="line"></span><br><span class="line">method:http_requests:rate5m&#123;method=<span class="string">"get"</span>&#125;  600</span><br><span class="line">method:http_requests:rate5m&#123;method=<span class="string">"del"</span>&#125;  34</span><br><span class="line">method:http_requests:rate5m&#123;method=<span class="string">"post"</span>&#125; 120</span><br><span class="line"></span><br><span class="line">查询：</span><br><span class="line">method_code:http_errors:rate5m&#123;code=<span class="string">"500"</span>&#125; / ignoring(code) method:http_requests:rate5m</span><br><span class="line">执行结果：</span><br><span class="line">&#123;method=<span class="string">"get"</span>&#125;  0.04            //  24 / 600</span><br><span class="line">&#123;method=<span class="string">"post"</span>&#125; 0.05            //   6 / 120</span><br></pre></td></tr></table></figure>
+
+<p>one-to-many/many-to-one：某一边会有多个元素和另一边的元素匹配，需要使用<code>group_left</code>或<code>group_right</code>指明是左边还是右边元素较多：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">查询：</span><br><span class="line">method_code:http_errors:rate5m / ignoring(code) group_left method:http_requests:rate5m</span><br><span class="line">执行结果：</span><br><span class="line">&#123;method=<span class="string">"get"</span>, code=<span class="string">"500"</span>&#125;  0.04            //  24 / 600</span><br><span class="line">&#123;method=<span class="string">"get"</span>, code=<span class="string">"404"</span>&#125;  0.05            //  30 / 600</span><br><span class="line">&#123;method=<span class="string">"post"</span>, code=<span class="string">"500"</span>&#125; 0.05            //   6 / 120</span><br><span class="line">&#123;method=<span class="string">"post"</span>, code=<span class="string">"404"</span>&#125; 0.175           //  21 / 120</span><br></pre></td></tr></table></figure>
+
+<p>不过，这种方式过于复杂，要尽量避免使用，很多时候使用 ignoring 降为 one-to-one 的匹配。</p>
+<h2 id="聚和操作符"><a href="#聚和操作符" class="headerlink" title="聚和操作符"></a><a href="https://prometheus.io/docs/prometheus/latest/querying/operators/#aggregation-operators" target="_blank" rel="noopener">聚和操作符</a></h2><p>用于聚和一个<strong>瞬时</strong>向量中的元素，将向量里的元素聚和的更少。</p>
+<ul>
+<li><code>sum</code> (calculate sum over dimensions)</li>
+<li><code>min</code> (select minimum over dimensions)</li>
+<li><code>max</code> (select maximum over dimensions)</li>
+<li><code>avg</code> (calculate the average over dimensions)</li>
+<li><code>count</code> (count number of elements in the vector)</li>
+<li><code>quantile</code> (calculate φ-quantile (0 ≤ φ ≤ 1) over dimensions)</li>
+<li><code>stddev</code> (calculate population standard deviation over dimensions) 标准差</li>
+<li><code>stdvar</code> (calculate population standard variance over dimensions) 方差</li>
+<li><code>count_values</code> (count number of elements with the same value)</li>
+<li><code>bottomk</code> (smallest k elements by sample value)</li>
+<li><code>topk</code> (largest k elements by sample value)</li>
+</ul>
+<p><code>without</code>用来指定聚和时不需要保留的标签，<code>by</code>用来指定聚和时需要保留的标签（可以类比SQL中的 group by）。</p>
+<p><code>http_requests_total</code>有这三个标签 <code>application</code>, <code>instance</code>, and <code>group</code> ，以下两者相等：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sum without (instance) (http_requests_total)</span><br><span class="line">sum by (application, group) (http_requests_total)</span><br></pre></td></tr></table></figure>
+
+<p>所有的进行求和：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sum(http_requests_total)</span><br></pre></td></tr></table></figure>
+
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a><a href="https://prometheus.io/docs/prometheus/latest/querying/functions/" target="_blank" rel="noopener">函数</a></h2><p>完整见官方文档，常见的如下:</p>
+<ul>
+<li><p>abs 绝对值</p>
+</li>
+<li><p>sqrt 平方根</p>
+</li>
+<li><p>exp 指数计算</p>
+</li>
+<li><p>ln 自然对数</p>
+</li>
+<li><p>ceil 向上取整</p>
+</li>
+<li><p>floor 向下取整</p>
+</li>
+<li><p>round 四舍五入取整</p>
+</li>
+<li><p>delta 计算区间向量里每一个时序第一个和最后一个的差值</p>
+</li>
+<li><p>sort 排序</p>
+</li>
+</ul>
+<hr>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://songjiayang.gitbooks.io/prometheus/content/introduction/what.html" target="_blank" rel="noopener">https://songjiayang.gitbooks.io/prometheus/content/introduction/what.html</a></p>
+<p><a href="https://www.bilibili.com/video/av22954995/" target="_blank" rel="noopener">https://www.bilibili.com/video/av22954995/</a></p>
+<p><a href="https://www.aneasystone.com/archives/2018/11/prometheus-in-action.html" target="_blank" rel="noopener">https://www.aneasystone.com/archives/2018/11/prometheus-in-action.html</a></p>
+<p><a href="https://frezc.github.io/2019/08/03/prometheus-metrics/" target="_blank" rel="noopener">https://frezc.github.io/2019/08/03/prometheus-metrics/</a></p>
+<p><a href="https://yunlzheng.gitbook.io/prometheus-book/parti-prometheus-ji-chu/quickstart/why-monitor" target="_blank" rel="noopener">https://yunlzheng.gitbook.io/prometheus-book/parti-prometheus-ji-chu/quickstart/why-monitor</a></p>
+<p><a href="https://www.cnblogs.com/ryanyangcs/p/11309373.html" target="_blank" rel="noopener">https://www.cnblogs.com/ryanyangcs/p/11309373.html</a></p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2019/12/16/大数据入门草稿-Hadoop/" title= "大数据入门草稿 - Hadoop">
+                    <div class="nextTitle">大数据入门草稿 - Hadoop</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/11/29/指标监控-1-JVM-指标框架-Micrometer/" title= "[指标监控] JVM 指标框架 Micrometer">
+                    <div class="prevTitle">[指标监控] JVM 指标框架 Micrometer</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#监控的目标"><span class="toc-number">1.</span> <span class="toc-text">监控的目标</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#为什么使用-Prometheus"><span class="toc-number">2.</span> <span class="toc-text">为什么使用 Prometheus</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装-Prometheus-Server"><span class="toc-number">3.</span> <span class="toc-text">安装 Prometheus Server</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Prometheus-架构"><span class="toc-number">4.</span> <span class="toc-text">Prometheus 架构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Prometheus-核心概念"><span class="toc-number">5.</span> <span class="toc-text">Prometheus 核心概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据模型"><span class="toc-number">5.0.1.</span> <span class="toc-text">数据模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#度量指标"><span class="toc-number">5.0.2.</span> <span class="toc-text">度量指标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#任务和实例"><span class="toc-number">5.0.3.</span> <span class="toc-text">任务和实例</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Prometheus-配置"><span class="toc-number">6.</span> <span class="toc-text">Prometheus 配置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PromQL"><span class="toc-number">7.</span> <span class="toc-text">PromQL</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#PromQL-语法数据类型"><span class="toc-number">7.1.</span> <span class="toc-text">PromQL 语法数据类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#时序选择器"><span class="toc-number">7.2.</span> <span class="toc-text">时序选择器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#瞬时向量选择器"><span class="toc-number">7.2.1.</span> <span class="toc-text">瞬时向量选择器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#区间向量选择器"><span class="toc-number">7.2.2.</span> <span class="toc-text">区间向量选择器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#偏移修饰器"><span class="toc-number">7.2.3.</span> <span class="toc-text">偏移修饰器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二元操作符"><span class="toc-number">7.3.</span> <span class="toc-text">二元操作符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#向量匹配规则"><span class="toc-number">7.4.</span> <span class="toc-text">向量匹配规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#聚和操作符"><span class="toc-number">7.5.</span> <span class="toc-text">聚和操作符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#函数"><span class="toc-number">7.6.</span> <span class="toc-text">函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-number">8.</span> <span class="toc-text">Reference</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 42
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite 1 - CSV Adapter</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href= "/2020/01/06/大数据入门草稿-Hive/" >大数据入门草稿 - Hive</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span><a class="archive-post-title" href= "/2019/12/18/HikariCP-2-HikariCP-配置项/" >[HikariCP] HikariCP 配置项 </a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span><a class="archive-post-title" href= "/2019/12/16/大数据入门草稿-Hadoop/" >大数据入门草稿 - Hadoop</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span><a class="archive-post-title" href= "/2019/12/08/指标监控-2-云原生监控系统-Prometheus/" >[指标监控] 云原生监控系统 Prometheus</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/29</span><a class="archive-post-title" href= "/2019/11/29/指标监控-1-JVM-指标框架-Micrometer/" >[指标监控] JVM 指标框架 Micrometer</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2019/10/08/并发札记-8-原子操作类/" >[回顾并发基础] 原子操作类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2019/10/05/并发札记-7-JUC中的并发队列/" >[回顾并发基础] JUC中的并发队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/04</span><a class="archive-post-title" href= "/2019/10/04/HikariCP-1-高性能的秘密/" >[HikariCP] HikariCP为什么快</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/03</span><a class="archive-post-title" href= "/2019/10/03/HikariCP-0-DBPool & JDBC基础/" >[HikariCP] DBPool & JDBC基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-4-常用Lock实现类/" >[回顾并发基础] ReentrantLock & ReentrantReadWriteLock & StampedLock</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-5-常用并发工具类/" >[回顾并发基础] 常用并发工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span><a class="archive-post-title" href= "/2019/09/21/Java并发札记-3-Lock & AQS/" >[回顾并发基础] Lock & AQS</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2019/09/11/使用ClassLoader在SpringBoot打包文件中获取嵌套jar/" >使用自定义ClassLoader加载SpringBoot打包文件中嵌套jar驱动</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2019/09/07/JVM-类加载机制/" >JVM 类加载机制解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2019/08/24/Java并发札记-0-并发问题的根源/" >[回顾并发基础] 并发问题的根源</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" >Spring Data Redis 实践 (v2.1.7)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" >[Leetcode单排] 二叉树的序列化与反序列化 (N297)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2019/08/10/Leetcode单排- 树类题目集合1-N102-N107-N429-N872-N112-N113/" >[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树相关Easy题-N100-N101-N104-N110-N111-N572-N965/" >[Leetcode单排] 树相关Easy题 (N100 N101 N104 N110 N111 N572 N965)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >[Leetcode单排] 树的遍历 (N94 N589 N590)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >[Leetcode单排] 划分为k个相等的子集 (N698)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-01矩阵-N542/" >[Leetcode单排] 01矩阵 (N542)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >[Leetcode单排] 运算表达式设优先级求值 (N241)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-分割回文串-N131/" >[Leetcode单排] 分割回文串 (N131)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" >[Leetcode单排] 复原IP地址 (N93)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2019/08/01/Leetcode单排-单词接龙-N127/" >[Leetcode单排] 单词接龙 (N127)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span><a class="archive-post-title" href= "/2019/07/31/Clojure-in-Action-Clojure-构件/" >Clojure in Action: Clojure 构件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >[Leetcode单排] 单词搜索 (N79 N212)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="connection-pool"><span class="iconfont-archer">&#xe606;</span>connection-pool</span>
+    
+        <span class="sidebar-tag-name" data-tags="db"><span class="iconfont-archer">&#xe606;</span>db</span>
+    
+        <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+        <span class="sidebar-tag-name" data-tags="cache"><span class="iconfont-archer">&#xe606;</span>cache</span>
+    
+        <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="metrics"><span class="iconfont-archer">&#xe606;</span>metrics</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+        <span class="sidebar-category-name" data-categories="BigData"><span class="iconfont-archer">&#xe60a;</span>BigData</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
