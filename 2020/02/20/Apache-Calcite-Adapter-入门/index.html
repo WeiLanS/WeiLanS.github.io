@@ -22,7 +22,7 @@
     <meta name="description" content>
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Apache Calcite 1 - CSV Adapter · JohnShen&#39;s Blog.</title>
+    <title>Apache Calcite (一) - Adapter · JohnShen&#39;s Blog.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -217,7 +217,7 @@
                 <a href="/" >JohnShen&#39;s Blog.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">Apache Calcite 1 - CSV Adapter</a>
+                <a href="#" class="post-name">Apache Calcite (一) - Adapter</a>
             </div>
     </div>
     
@@ -247,7 +247,7 @@ height:40vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            Apache Calcite 1 - CSV Adapter
+            Apache Calcite (一) - Adapter
             <!-- 404 -->
             
         </h1>
@@ -266,7 +266,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">123</span>阅读时长: <span class="post-count reading-time">1 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">1.7k</span>阅读时长: <span class="post-count reading-time">8 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -390,9 +390,64 @@ height:40vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <p>接触 Calcite 的时间不算长，感觉 Calcite 还是很难的，越往下看查询优化部分就很难看的下去。不过工作方面暂时只用到了Adapter部分，而且由于通用性的考量，使用的Table也是<code>ScannableTable</code>。一下子接触太多东西会受不了也容易忘，所以还是从头开始记笔记，一边完成工作上的事一边继续学习吧，一蹴而就不可取。</p>
-<p><code>org.apache.calcite.jdbc.Driver</code></p>
-<p><code>jdbc:calcite:</code></p>
+        <blockquote>
+<p>接触 Calcite 的时间不算长，感觉 Calcite 还是很难的，越往下看各个名次及查询优化部分就很难看的下去。不过工作方面暂时只用到了 Adapter 部分，而且由于通用性的考量，使用的 Table 暂时是<code>ScannableTable</code>。一下子接触太多东西也容易忘，所以还是从头开始记笔记，一边完成工作上的事一边继续学习，一蹴而不可取。</p>
+</blockquote>
+<p>主要内容来自 Calcite 的<a href="https://calcite.apache.org/docs/tutorial.html" target="_blank" rel="noopener">英文官方指南</a>，介绍如何使用 Calcite 对 CSV 进行 SQL 查询，主要参考一个基础的 Adapter 是如何实现的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/apache/calcite.git</span><br><span class="line"><span class="built_in">cd</span> calcite</span><br><span class="line">mvn install -DskipTests -Dcheckstyle.skip=<span class="literal">true</span></span><br><span class="line"><span class="built_in">cd</span> example/csv</span><br></pre></td></tr></table></figure>
+
+<p>官方介绍的是使用 Sqlline 进行 shell 式查询，执行<code>SELECT * FROM emps;</code>可以看到存放在 CSV 中的<code>emps</code>表数据。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./sqlline</span><br><span class="line">sqlline&gt; !connect jdbc:calcite:model=src/<span class="built_in">test</span>/resources/model.json admin admin</span><br><span class="line">sqlline&gt; !tables</span><br><span class="line">sqlline&gt; SELECT * FROM emps;</span><br></pre></td></tr></table></figure>
+
+<p>model.json 文件中的内容是查询关键，可以看到<code>factory</code>中指定了<code>CsvSchemaFactory</code>，后续可以以该类为起点展开。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"version"</span>: <span class="string">"1.0"</span>,</span><br><span class="line">  <span class="attr">"defaultSchema"</span>: <span class="string">"SALES"</span>,</span><br><span class="line">  <span class="attr">"schemas"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"name"</span>: <span class="string">"SALES"</span>,</span><br><span class="line">      <span class="attr">"type"</span>: <span class="string">"custom"</span>,</span><br><span class="line">      <span class="attr">"factory"</span>: <span class="string">"org.apache.calcite.adapter.csv.CsvSchemaFactory"</span>,</span><br><span class="line">      <span class="attr">"operand"</span>: &#123;</span><br><span class="line">        <span class="attr">"directory"</span>: <span class="string">"sales"</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于使用 Sqlline 不方便 DEBUG，所以改写了<code>CsvTest</code>中的测试用例，把<code>directory</code>换成了绝对路径(实际用来使用的是<code>new File(directory)</code>，避免找不到文件)，<code>model</code>对应的JSON字符串开头多了<code>inline</code>。Calcite 对应的 Driver 是<code>org.apache.calcite.jdbc.Driver</code>，驱动的注册工作基于 SPI 自动完成，jdbcUrl为<code>jdbc:calcite:</code>即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">common</span><span class="params">()</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">    Properties info = <span class="keyword">new</span> Properties();</span><br><span class="line">    info.put(<span class="string">"model"</span>,</span><br><span class="line">            <span class="string">"inline:"</span> + <span class="string">"&#123;\n"</span> +</span><br><span class="line">                    <span class="string">"  \"version\": \"1.0\",\n"</span> +</span><br><span class="line">                    <span class="string">"  \"defaultSchema\": \"SALES\",\n"</span> +</span><br><span class="line">                    <span class="string">"  \"schemas\": [\n"</span> +</span><br><span class="line">                    <span class="string">"    &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"      \"name\": \"SALES\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"type\": \"custom\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"factory\": \"org.apache.calcite.adapter.csv.CsvSchemaFactory\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"operand\": &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"        \"directory\": \"/...绝对路径/src/test/resources/sales\"\n"</span> +</span><br><span class="line">                    <span class="string">"      &#125;\n"</span> +</span><br><span class="line">                    <span class="string">"    &#125;\n"</span> +</span><br><span class="line">                    <span class="string">"  ]\n"</span> +</span><br><span class="line">                    <span class="string">"&#125;"</span>);</span><br><span class="line">    <span class="keyword">try</span> (Connection connection = DriverManager.getConnection(<span class="string">"jdbc:calcite:"</span>, info);</span><br><span class="line">         Statement statement = connection.createStatement();</span><br><span class="line">         ResultSet resultSet = statement.executeQuery(<span class="string">"select * from emps"</span>)) &#123;</span><br><span class="line">        <span class="keyword">while</span> (resultSet.next()) &#123;</span><br><span class="line">            <span class="comment">// logic</span></span><br><span class="line">            System.out.println(resultSet.getLong(<span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="一-SchemaFactory-amp-Schema"><a href="#一-SchemaFactory-amp-Schema" class="headerlink" title="一. SchemaFactory &amp; Schema"></a>一. SchemaFactory &amp; Schema</h3><blockquote>
+<p>First, we define a schema based on a schema factory class in a model file. </p>
+<p>Then the schema factory creates a schema, and the schema creates several tables, each of which knows how to get data by scanning a CSV file. </p>
+<p>Last, after Calcite has parsed the query and planned it to use those tables, Calcite invokes the tables to read the data as the query is being executed. </p>
+</blockquote>
+<p>在 model 中指定了 factory 为 CsvSchemaFactory，其实现了 SchemaFactory 接口，主要完成生成Schema 的 create 方法实现。<code>directory</code>可作为 <code>operand</code>的参数获取到，根据<code>directory</code>生成<code>directoryFile</code>参数，及表示存放 csv/csv.gz 的文件目录。返回结果为 继承了<code>AbstractSchema</code> 的 <code>CsvSchema</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Schema <span class="title">create</span><span class="params">(SchemaPlus parentSchema, String name,</span></span></span><br><span class="line"><span class="function"><span class="params">      Map&lt;String, Object&gt; operand)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> String directory = (String) operand.get(<span class="string">"directory"</span>);</span><br><span class="line">    <span class="keyword">final</span> File base =</span><br><span class="line">        (File) operand.get(ModelHandler.ExtraOperand.BASE_DIRECTORY.camelName);</span><br><span class="line">    File directoryFile = <span class="keyword">new</span> File(directory);</span><br><span class="line">    <span class="keyword">if</span> (base != <span class="keyword">null</span> &amp;&amp; !directoryFile.isAbsolute()) &#123;</span><br><span class="line">      directoryFile = <span class="keyword">new</span> File(base, directory);</span><br><span class="line">    &#125;</span><br><span class="line">    String flavorName = (String) operand.get(<span class="string">"flavor"</span>);</span><br><span class="line">    CsvTable.Flavor flavor;</span><br><span class="line">    <span class="keyword">if</span> (flavorName == <span class="keyword">null</span>) &#123;</span><br><span class="line">      flavor = CsvTable.Flavor.SCANNABLE;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      flavor = CsvTable.Flavor.valueOf(flavorName.toUpperCase(Locale.ROOT));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> CsvSchema(directoryFile, flavor);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>CsvSchema</code>中需要实现的是<code>getTableMap()</code>方法，其返回结果为<code>Map&lt;String, Table&gt;</code>。在 sales 目录下的 DEPTS.csv、EMPS.csv.gz、SDEPTS.csv 都会解析为对应的表，返回一个不可变Map：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;DEPTS&quot; -&gt; &quot;CsvScannableTable&quot;</span><br><span class="line">&quot;EMPS&quot; -&gt; &quot;CsvScannableTable&quot;</span><br><span class="line">&quot;SDEPTS&quot; -&gt; &quot;CsvScannableTable&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="二-Table-amp-Enumerator"><a href="#二-Table-amp-Enumerator" class="headerlink" title="二. Table &amp; Enumerator"></a>二. Table &amp; Enumerator</h3><p>有三种Table，其接口分别为<code>ScannableTable</code>、<code>FilterableTable</code>、<code>TranslatableTable</code>，在文中分别对应<code>CsvScannableTable</code>，<code>CsvFilterableTable</code>、<code>CsvTranslatableTable</code>，先使用<code>ScannableTable</code>完成入门流程。这三者的主要区别可简述为：ScannableTable 会把所有数据加载到内存中，在内存中进行条件过滤；FilterableTable 可以获得过滤条件，可以帮助在DB查询数据时先过滤一部分，从而减少内存开销；TranslatableTable 难度较大，需根据上下文自己定义表扫描的执行计划。</p>
+<p>CsvScannableTable 继承自<code>CsvTable</code>，而<code>CsvTable</code>又继承在<code>AbstractTable</code>，在<code>CsvTable</code>中实现了<code>getRowType</code>方法，返回类型为<code>RelDataType</code>，表示所有列属性信息。文中的CSV示例是以<code>DEPTNO:int,NAME:string</code>特定格式表示数据类型的，<code>getRowType</code>返回的就是包含这些属性名称及类型对应关系的<code>RelDataType</code>。</p>
+<p>在可获得类型信息后，<code>CsvScannableTable</code>需要关心的就是如何获取及扫描数据，这就需要实现<code>ScannableTable</code>定义的<code>scan</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Enumerable&lt;Object[]&gt; scan(DataContext root) &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">int</span>[] fields = CsvEnumerator.identityList(fieldTypes.size());</span><br><span class="line">  <span class="keyword">final</span> AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> AbstractEnumerable&lt;Object[]&gt;() &#123;</span><br><span class="line">    <span class="keyword">public</span> Enumerator&lt;Object[]&gt; enumerator() &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> CsvEnumerator&lt;&gt;(source, cancelFlag, <span class="keyword">false</span>, <span class="keyword">null</span>,</span><br><span class="line">          <span class="keyword">new</span> CsvEnumerator.ArrayRowConverter(fieldTypes, fields));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>CsvEnumerator</code>实现了<code>Enumerator</code>接口，内部调用 opencsv 的 CSVReader.readNext() 进行推进及获取数据。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Enumerator</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">AutoCloseable</span> </span>&#123;  </span><br><span class="line">  <span class="function">T <span class="title">current</span><span class="params">()</span></span>;</span><br><span class="line">  <span class="function"><span class="keyword">boolean</span> <span class="title">moveNext</span><span class="params">()</span></span>;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">reset</span><span class="params">()</span></span>;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CSV Adapter 总体的依赖关系如下所示。</p>
+<img src="https://i.loli.net/2020/02/22/jRLE6h7nbaCFXTm.png" width="1000">
+
+
+
+<h3 id="三-View"><a href="#三-View" class="headerlink" title="三: View"></a>三: View</h3><p>在 JSON 中的 schemas 中可以添加 tables 来实现 View（type 指定为 view)。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  version: <span class="string">'1.0'</span>,</span><br><span class="line">  defaultSchema: <span class="string">'SALES'</span>,</span><br><span class="line">  schemas: [</span><br><span class="line">    &#123;</span><br><span class="line">      name: <span class="string">'SALES'</span>,</span><br><span class="line">      type: <span class="string">'custom'</span>,</span><br><span class="line">      factory: <span class="string">'org.apache.calcite.adapter.csv.CsvSchemaFactory'</span>,</span><br><span class="line">      operand: &#123;</span><br><span class="line">        directory: <span class="string">'sales'</span></span><br><span class="line">      &#125;,</span><br><span class="line">      tables: [</span><br><span class="line">        &#123;</span><br><span class="line">          name: <span class="string">'FEMALE_EMPS'</span>,</span><br><span class="line">          type: <span class="string">'view'</span>,</span><br><span class="line">          sql: <span class="string">'SELECT * FROM emps WHERE gender = \'F\''</span></span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="四-自定义表"><a href="#四-自定义表" class="headerlink" title="四: 自定义表"></a>四: 自定义表</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  version: <span class="string">'1.0'</span>,</span><br><span class="line">  defaultSchema: <span class="string">'CUSTOM_TABLE'</span>,</span><br><span class="line">  schemas: [</span><br><span class="line">    &#123;</span><br><span class="line">      name: <span class="string">'CUSTOM_TABLE'</span>,</span><br><span class="line">      tables: [</span><br><span class="line">        &#123;</span><br><span class="line">          name: <span class="string">'EMPS'</span>,</span><br><span class="line">          type: <span class="string">'custom'</span>,</span><br><span class="line">          factory: <span class="string">'org.apache.calcite.adapter.csv.CsvTableFactory'</span>,</span><br><span class="line">          operand: &#123;</span><br><span class="line">            file: <span class="string">'sales/EMPS.csv.gz'</span>,</span><br><span class="line">            flavor: <span class="string">"scannable"</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>自定义表相对于自定义Schema有更高的自由度，每个表可以有单独的参数设置，使用的工厂类也变为了<code>CsvTableFactory</code>，其 create 方法也较为简单，返回结果一样是 CsvScannableTable。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> CsvTable <span class="title">create</span><span class="params">(SchemaPlus schema, String name,</span></span></span><br><span class="line"><span class="function"><span class="params">    Map&lt;String, Object&gt; operand, RelDataType rowType)</span> </span>&#123;</span><br><span class="line">  String fileName = (String) operand.get(<span class="string">"file"</span>);</span><br><span class="line">  <span class="keyword">final</span> File base =</span><br><span class="line">      (File) operand.get(ModelHandler.ExtraOperand.BASE_DIRECTORY.camelName);</span><br><span class="line">  <span class="keyword">final</span> Source source = Sources.file(base, fileName);</span><br><span class="line">  <span class="keyword">final</span> RelProtoDataType protoRowType =</span><br><span class="line">      rowType != <span class="keyword">null</span> ? RelDataTypeImpl.proto(rowType) : <span class="keyword">null</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> CsvScannableTable(source, protoRowType);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="五-JDBC-Adapter"><a href="#五-JDBC-Adapter" class="headerlink" title="五: JDBC Adapter"></a>五: JDBC Adapter</h3><p>JDBC Adapter 可以将数据库中的一个 Schema 映射成 Calcite 中的一个 Schema，该 Adapter 内置在 Calcite 中。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  version: '1.0',</span><br><span class="line">  defaultSchema: 'FOODMART',</span><br><span class="line">  schemas: [</span><br><span class="line">    &#123;</span><br><span class="line">      name: 'FOODMART',</span><br><span class="line">      type: 'custom',</span><br><span class="line">      factory: 'org.apache.calcite.adapter.jdbc.JdbcSchema$Factory',</span><br><span class="line">      operand: &#123;</span><br><span class="line">        jdbcDriver: 'com.mysql.jdbc.Driver',</span><br><span class="line">        jdbcUrl: 'jdbc:mysql://localhost/foodmart',</span><br><span class="line">        jdbcUser: 'foodmart',</span><br><span class="line">        jdbcPassword: 'foodmart'</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用的时候需要注意SQL语句的双引号以及大小写，该 Adapter SQL 语法比较严格。目前该 Adapter有局限性，仅支持表扫描操作，其他处理(过滤、连接、聚集等)都发生在 Calcite 中。</p>
+<p>可以通过下面的简单示例看一下 CSV 和 MYSQL 两处数据源的联合查询。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hybrid</span><span class="params">()</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">    Properties info = <span class="keyword">new</span> Properties();</span><br><span class="line">    info.put(<span class="string">"model"</span>,</span><br><span class="line">            <span class="string">"inline:"</span> +</span><br><span class="line">                    <span class="string">"&#123;\n"</span> +</span><br><span class="line">                    <span class="string">"  \"version\": \"1.0\",\n"</span> +</span><br><span class="line">                    <span class="string">"  \"defaultSchema\": \"TEST\",\n"</span> +</span><br><span class="line">                    <span class="string">"  \"schemas\": [\n"</span> +</span><br><span class="line">                    <span class="string">"    &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"      \"name\": \"TEST\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"type\": \"custom\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"factory\": \"org.apache.calcite.adapter.jdbc.JdbcSchema$Factory\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"operand\": &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"        \"jdbcDriver\": \"com.mysql.jdbc.Driver\",\n"</span> +</span><br><span class="line">                    <span class="string">"        \"jdbcUrl\": \"jdbc:mysql://127.0.0.1:3306/test\",\n"</span> +</span><br><span class="line">                    <span class="string">"        \"jdbcUser\": \"...\",\n"</span> +</span><br><span class="line">                    <span class="string">"        \"jdbcPassword\": \"...\"\n"</span> +</span><br><span class="line">                    <span class="string">"      &#125;\n"</span> +</span><br><span class="line">                    <span class="string">"    &#125;,\n"</span> +</span><br><span class="line">                    <span class="string">"    &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"      \"name\": \"SALES\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"type\": \"custom\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"factory\": \"org.apache.calcite.adapter.csv.CsvSchemaFactory\",\n"</span> +</span><br><span class="line">                    <span class="string">"      \"operand\": &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"        \"directory\": \"/.../sales\"\n"</span> +</span><br><span class="line">                    <span class="string">"      &#125;\n"</span> +</span><br><span class="line">                    <span class="string">"    &#125;\n"</span> +</span><br><span class="line">                    <span class="string">"  ]\n"</span> +</span><br><span class="line">                    <span class="string">"&#125;"</span></span><br><span class="line">    );</span><br><span class="line">    <span class="keyword">try</span> (Connection connection = DriverManager.getConnection(<span class="string">"jdbc:calcite:"</span>, info);</span><br><span class="line">         Statement statement = connection.createStatement();</span><br><span class="line">         ResultSet resultSet = statement.executeQuery(<span class="string">"SELECT * FROM \"TEST\".\"abc\",\"SALES\".\"EMPS\""</span>)) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (resultSet.next()) &#123;</span><br><span class="line">            <span class="comment">// logic</span></span><br><span class="line">            System.out.println(resultSet.getString(<span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>另外，还有一种 <a href="https://calcite.apache.org/docs/tutorial.html#the-cloning-jdbc-adapter" target="_blank" rel="noopener">Cloning JDBC adapter</a>，数据同样来自数据库，但是在第一次读取时会将数据读取到内存表中，Calcite 根据内存表计算查询，实际上相当于数据库的缓存。</p>
+<hr>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://matt33.com/2019/03/07/apache-calcite-process-flow/" target="_blank" rel="noopener">https://matt33.com/2019/03/07/apache-calcite-process-flow/</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/53725382" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/53725382</a></p>
 
     </article>
     <!-- license  -->
@@ -497,7 +552,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#一-SchemaFactory-amp-Schema"><span class="toc-number">1.</span> <span class="toc-text">一. SchemaFactory &amp; Schema</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#二-Table-amp-Enumerator"><span class="toc-number">2.</span> <span class="toc-text">二. Table &amp; Enumerator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三-View"><span class="toc-number">3.</span> <span class="toc-text">三: View</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#四-自定义表"><span class="toc-number">4.</span> <span class="toc-text">四: 自定义表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#五-JDBC-Adapter"><span class="toc-number">5.</span> <span class="toc-text">五: JDBC Adapter</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-number"></span> <span class="toc-text">Reference</span></a>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -510,6 +565,20 @@ top:40vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -1158,7 +1227,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite 1 - CSV Adapter</a>
+            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite (一) - Adapter</a>
         </li>
     
     
@@ -1217,17 +1286,17 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-4-常用Lock实现类/" >[回顾并发基础] ReentrantLock & ReentrantReadWriteLock & StampedLock</a>
         </li>
     
     
         <li class="archive-post-item">
             <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-5-常用并发工具类/" >[回顾并发基础] 常用并发工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
         </li>
     
     
@@ -1247,12 +1316,12 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
         </li>
     
     
@@ -1390,6 +1459,8 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
     
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
         <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
     
         <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
@@ -1399,8 +1470,6 @@ top:40vh;
         <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
     
         <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
-    
-        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
     
         <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
     

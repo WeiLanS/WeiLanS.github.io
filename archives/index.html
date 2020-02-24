@@ -348,13 +348,14 @@
     <article class="index-post">
         <a class="abstract-title" href = "/2020/02/20/Apache-Calcite-Adapter-入门/" >
             
-                <span>Apache Calcite 1 - CSV Adapter</span>
+                <span>Apache Calcite (一) - Adapter</span>
         </a>
         <div class="abstract-content">
-            接触 Calcite 的时间不算长，感觉 Calcite 还是很难的，越往下看查询优化部分就很难看的下去。不过工作方面暂时只用到了Adapter部分，而且由于通用性的考量，使用的Table也是ScannableTable。一下子接触太多东西会受不了也容易忘，所以还是从头开始记笔记，一边完成工作上的事一边继续学习吧，一蹴而就不可取。
-org.apache.calcite.jdbc.Driver
-jdbc:calcite:
+            
+接触 Calcite 的时间不算长，感觉 Calcite 还是很难的，越往下看各个名次及查询优化部分就很难看的下去。不过工作方面暂时只用到了 Adapter 部分，而且由于通用性的考量，使用的 Table 暂时是ScannableTable。一下子接触太多东西也容易忘，所以还是从头开始记笔记，一边完成工作上的事一边继续学习，一蹴而不可取。
 
+主要内容来自 Calcite 的英文官方指南，介绍如何使用 Calcite 对 CSV 进行 SQL 查询，主要参考一个基础的 Adapter 是如何实现的。
+1234git clone https://github.com/apache/calc...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1650,6 +1651,20 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
         Total : 42
@@ -1668,7 +1683,7 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite 1 - CSV Adapter</a>
+            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite (一) - Adapter</a>
         </li>
     
     
@@ -1727,17 +1742,17 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-4-常用Lock实现类/" >[回顾并发基础] ReentrantLock & ReentrantReadWriteLock & StampedLock</a>
         </li>
     
     
         <li class="archive-post-item">
             <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-5-常用并发工具类/" >[回顾并发基础] 常用并发工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
         </li>
     
     
@@ -1757,12 +1772,12 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
         </li>
     
     
@@ -1900,6 +1915,8 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
         <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
     
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
         <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
     
         <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
@@ -1909,8 +1926,6 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
         <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
     
         <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
-    
-        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
     
         <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
     
