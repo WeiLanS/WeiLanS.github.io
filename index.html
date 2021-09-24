@@ -230,7 +230,7 @@ height:40vh;
     <!-- 文章页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(https://w.wallhaven.cc/full/gj/wallhaven-gjovde.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(https://i.loli.net/2021/09/24/Ui2EtBKfdvkjD3P.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
@@ -357,21 +357,47 @@ height:40vh;
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2020/02/20/Apache-Calcite-Adapter-入门/" >
+        <a class="abstract-title" href = "/2021/09/23/基于Kubeadm离线安装Kubernetes/" >
             
-                <span>Apache Calcite (一) - Adapter</span>
+                <span>基于Kubeadm离线安装Kubernetes</span>
         </a>
         <div class="abstract-content">
-            
-接触 Calcite 的时间不算长，感觉 Calcite 还是很难的，越往下看各个名次及查询优化部分就很难看的下去。不过工作方面暂时只用到了 Adapter 部分，而且由于通用性的考量，使用的 Table 暂时是ScannableTable。一下子接触太多东西也容易忘，所以还是从头开始记笔记，一边完成工作上的事一边继续学习，一蹴而不可取。
+            基于kubeadm离线安装K8sk8s版本：v1.22.2
+安装前置条件
+每台机器 RAM &gt;= 2GB 
 
-主要内容来自 Calcite 的英文官方指南，介绍如何使用 Calcite 对 CSV 进行 SQL 查询，主要参考一个基础的 Adapter 是如何实现的。
-1234git clone https://github.com/apache/calc...
+每台机器 CPU &gt;= 2核
+
+集群中的所有机器的网络能互相连接（内网或公网皆可）
+
+节点之中不可以有重复的主机名、MAC 地址、 product_uuid 
+1234# MAC addressip link# product_uuidsudo cat /sys/class/dmi/id/product_uuid
+
+禁用交换分区（下文有关闭命令）
+
+确认端口可用
+
+控制平面节点端口
+
+
+
+协议
+方向
+端口范围
+作用
+使用者
+
+
+
+TCP
+入站
+6443
+Kuberne...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/02/20</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/09/23</span>
             </div>
             <!-- tags  -->
             
@@ -384,22 +410,22 @@ height:40vh;
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2020/01/06/大数据入门草稿-Hive/" >
+        <a class="abstract-title" href = "/2021/09/14/Kubernetes相关记录/" >
             
-                <span>大数据入门草稿 - Hive</span>
+                <span>Kubernetes相关记录</span>
         </a>
         <div class="abstract-content">
-            Hive简介Hive是Hadoop的数据仓库工具，可将结构化的数据文件映射为一张表，提供类SQL的查询功能。其本质是将HQL转化为MapReduce程序。
-Hive会将SQL中的重用操作使用MapReduce写成很多模块，当用户根据业务需求编写SQL语句时，可以通过Hive匹配出相应的MapReduce模板。运行MapReduce程序，生成分析结果。
-Hive处理的数据存储在HDFS中。
-Hive分析数据的默认实现是MapReduce（可以改成Spark)。
-Hive执行程序运行在Yarn上。
-Hive 适用于数据分析场景以及对实时性要求不高的场合。其优势在于处理大数据，对于小数据处理没...
+            pod是k8s调度最小单位，一个pod可以包含一或多个container，容器间共享一个Network namespace
+kubectl create -f pod_nginx.yml
+123456789101112apiVersion: v1kind: Podmetadata:  name: nginx  labels:    app: nginxspec:  containers:  - name: nginx    image: nginx    ports:    - containerPort: 80
+
+kubectl delete -f pod_nginx.yml
+kube...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/01/06</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/09/14</span>
             </div>
             <!-- tags  -->
             
@@ -412,27 +438,79 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/12/18/HikariCP-2-HikariCP-配置项/" >
+        <a class="abstract-title" href = "/2021/09/13/Docker容器实战-网络相关/" >
             
-                <span>[HikariCP] HikariCP 配置项 </span>
+                <span>容器实战 - 网络相关</span>
         </a>
         <div class="abstract-content">
-            <blockquote>
-<p>HikariCP 的全部配置介绍来自其<a href="https://github.com/brettwooldridge/HikariCP" target="_blank" rel="noopener">首页</a>，主要分为必填项和可选项，对于大部分配置项，HikariCP会有默认设置，官方建议在使用时无需过多的调整。 一些非必要属性的配置说明来自《HikariCP数据库连接池实战》。</p>
-</blockquote>
+            Network Namespace隔离的网络资源包括：
+
+网络设备，如eth0, lo 这种网络设备；
+ipv4和ipv6协议栈，IP层及上面的TCP/UDP协议栈也是每个Namespace独立工作的。
+IP路由表，可通过ip route查看。
+防火墙规则，每个Namespace可以独立配置iptables规则。
+网络状态信息。可从 /proc/net 和 /sys/class/net 里得到。
+
+lsns -t net这个命令来查看系统里已有的 Network Namespace。当然，lsns也可以用来查看其它 Namespace。
+容器里 Network Namespace 的网络...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/12/18</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/09/13</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/07/19/朝花夕拾-Linux-Shell-文本处理/" >
+            
+                <span>朝花夕拾 - Linux Shell 文本处理</span>
+        </a>
+        <div class="abstract-content">
+            朝花夕拾 - Linux Shell 文本处理A. grep文本搜索
+123456789101112131415161718192021# 1. --color可以在输出行中着重标记出匹配到的模式grep --color=auto word filename# 2. 选项-E可以使grep使用扩展正则表达式。也可以使用默认启用扩展正则表达式的egrep命令grep -E "[a-z]+" filenameegrep "[a-z]+" filename# 3. 选项-o可以只输出匹配到的文本echo this is a line. | egrep -o "[a-z]+\." # line....
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/07/19</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/07/15/Clickhouse/" >
+            
+                <span>Clickhouse 概述</span>
+        </a>
+        <div class="abstract-content">
+            Clickhouse 概述使用场景因为ClickHouse在诞生之初是为了服务Yandex自家的Web流量分析产品Yandex.Metrica，所以在存储数据超过20万亿行的情况下，ClickHouse做到了90%的查询都能够在1秒内返回的惊人之举。它基本能够胜任各种数据分析类的场景，并且随着数据体量的增大，它的优势也会变得越为明显。ClickHouse非常适用于商业智能领域（也就是我们所说的BI领域），除此之外，它也能够被广泛应用于广告流量、Web、App流量、电信、金融、电子商务、信息安全、网络游戏、物联网等众多其他领域。不过ClickHouse不应该把它用于任何OLTP事务性操作的...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/07/15</span>
             </div>
             <!-- tags  -->
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "connection-pool">connection-pool</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "db">db</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "clickhouse">clickhouse</a>
     
 </div>
             
@@ -445,50 +523,36 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/12/16/大数据入门草稿-Hadoop/" >
+        <a class="abstract-title" href = "/2021/05/19/Linux宿主机及Docker监控/" >
             
-                <span>大数据入门草稿 - Hadoop</span>
+                <span>Linux宿主机及Docker监控</span>
         </a>
         <div class="abstract-content">
-            <blockquote>
-<p>HDFS、YARN、MapReduce</p>
-</blockquote>
+            宿主机监控Interpreting Prometheus metrics for Linux disk I/O utilizatio
+
+Node_exporter IO指标详解
+
+Understanding Machine CPU usage
+
+Node_exporter CPU指标详解，教你看懂CPU适用率是怎么算出来的
+
+Docker CPU Usage
+
+介绍docker stats中的docker原生CPU信息收集的细节。
+
+容器监控在调研方案中发现，基本都是采用cAdvisor，K8S内部也是采用cAdvisor。选取版本 v0.37.5。
+cAdvisor CPU过高之前使用...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/12/16</span>
-            </div>
-            <!-- tags  -->
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/12/08/指标监控-2-云原生监控系统-Prometheus/" >
-            
-                <span>[指标监控] 云原生监控系统 Prometheus</span>
-        </a>
-        <div class="abstract-content">
-            <blockquote>
-<p>Prometheus 作为当前炙手可热的云原生监控系统，是继 Kubernetes 之后第二个加入云原生计算基金会的成员。其安装及使用也是相当便捷，有强大的扩展性和集成性，查询语言 PromQL 可以轻松完成指标数据的查询与聚和。</p>
-</blockquote>
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/12/08</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/05/19</span>
             </div>
             <!-- tags  -->
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "metrics">metrics</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "monitor">monitor</a>
     
 </div>
             
@@ -501,25 +565,26 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/11/29/指标监控-1-JVM-指标框架-Micrometer/" >
+        <a class="abstract-title" href = "/2021/05/16/Linux性能优化-内存篇/" >
             
-                <span>[指标监控] JVM 指标框架 Micrometer</span>
+                <span>Linux性能优化-内存篇</span>
         </a>
         <div class="abstract-content">
-            <blockquote>
-<p>作为 <code>Micrometer</code> + <code>Prometheus</code> + <code>Grafana</code> 的开篇，介绍<code>Micrometer</code>的基础应用。当前项目与数据库集打交道，但目前因为没有相关指标监控，项目运行情况一直是个黑盒。对于接口调用情况、连接池配置情况、性能情况若都是手动分析日志，则必然是不可行的。所以想要基于这三者搭建一台指标监控体系。</p>
-</blockquote>
+            1. 内存映射虚拟内存：
+Linux 内核给每个进程都提供了一个独立的虚拟地址空间，并且这个地址空间是连续的。进程可以很方便地访问虚拟内存。
+虚拟地址空间分为：内核空间和用户空间。不同字长处理器（32位/64位）地址空间范围也不同。进程在用户态时，只能访问用户空间内存；只有进入内核态后，才可以访问内核空间内存。
+所有进程的虚拟内存加起来要比实际内存大得多，因此不是所有虚拟内存都分配内存，只有实际使用的虚拟内存才会分配物理内存，分配后的物理内存通过内存映射进行管理。内存映射，其实就是将虚拟内存地址映射到物理内存地址。为了完成内存映射，内核为每个进程都维护了一张页表，记录虚拟地址与物理地址的...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/11/29</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/05/16</span>
             </div>
             <!-- tags  -->
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "metrics">metrics</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "memory">memory</a>
     
 </div>
             
@@ -532,25 +597,26 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/10/08/并发札记-8-原子操作类/" >
+        <a class="abstract-title" href = "/2021/03/24/Redis-集群/" >
             
-                <span>[回顾并发基础] 原子操作类</span>
+                <span>Redis-集群</span>
         </a>
         <div class="abstract-content">
-            <blockquote>
-<p>介绍了原子操作类，以<code>AtomicLong</code>介绍原子类的实现，并对原子类的分类和使用（基本数据类型、引用类型、对象属性更新器、数组、累加器）进行说明。</p>
-</blockquote>
+            Redis Cluster 是 Redis 的分布式解决方案，在3.0版本正式推出，有效地解决了Redis分布式方面的需求。当遇到单机内存、并发、流量等瓶颈时，可以采用 Cluster 架构方案达到负载均衡的目的。
+1. 数据分布分布式数据库首先要解决把整个数据集按照分区规则映射到多个节点的问题，即把数据集划分到多个节点上，每个节点负责整体数据的一个子集，常规的有：哈希分区、顺序分区。主要的哈希分区规则有：节点取余分区、一致性哈希分区、虚拟槽分区。
+节点取余分区hash(key) % N计算出哈希值，用来决定数据映射到哪一个节点上。
+缺点：当节点数量变化时，如扩容或收缩节点，数据节点映射...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/10/08</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/03/24</span>
             </div>
             <!-- tags  -->
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "concurrent">concurrent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "redis">redis</a>
     
 </div>
             
@@ -563,25 +629,32 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/10/05/并发札记-7-JUC中的并发队列/" >
+        <a class="abstract-title" href = "/2021/03/15/Kubernetes-入门/" >
             
-                <span>[回顾并发基础] JUC中的并发队列</span>
+                <span>Kubernetes 入门笔记</span>
         </a>
         <div class="abstract-content">
-            <blockquote>
-<p><code>SynchronousQueue</code>: 一个不存储元素的阻塞队列；</p>
-</blockquote>
+             Kubernetes 
+一个用于自动化部署、扩容和管理容器应用的开源系统；它将一个分布式软件的一组容器打包成一个个更容易管理和发现的逻辑单元。
+它最开始由 Google 工程师创立，深受公司内部 Borg 和 Omega 项目的影响，目前是 CNCF 的项目。
+主要功能：
+
+自动装箱：基于容器对应用运行环境的资源配置要求自动部署应用容器
+
+自我修复：当容器失败时，会对容器进行重启；当所部署的Node 节点有问题时，会对容器进行重新部署和重新调度；当容器未通过监控检查时，会关闭此容器直到容器正常运行时，才会对外提供服务
+
+水平扩展：通过简单的命令、用户UI 界面或基于CPU 等资源使用情...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/10/05</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/03/15</span>
             </div>
             <!-- tags  -->
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "concurrent">concurrent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "docker">docker</a>
     
 </div>
             
@@ -594,60 +667,27 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/10/04/HikariCP-1-高性能的秘密/" >
+        <a class="abstract-title" href = "/2021/01/24/DDIA-读书整理-1-可靠、可拓展与可维护的应用系统/" >
             
-                <span>[HikariCP] HikariCP为什么快</span>
+                <span>DDIA 读书整理- 1.可靠、可拓展与可维护的应用系统</span>
         </a>
         <div class="abstract-content">
-            <blockquote>
-<p><strong>“Simplicity is prerequisite for reliability.”</strong></p>
-</blockquote>
+            数据密集型数据密集型（Data-intensive）：对于一个应用系统，如果数据是其成败的决定性因素，包括：数据的规模、数据的复杂度、数据的产生与变化速率等，即可称为“数据密集型应用系统”。与之相对应的是“计算密集型系统”，CPU主频是其主要制约瓶颈。
+数据密集型应用通常基于标准模块构造而成，每个模块负责单一功能，如：数据库、高速缓存、索引、流式处理、批处理等。单个组件无法满足所有数据处理与存储需求，因而需将任务分解，每个组件高效完成一部分，多组件依赖应用层代码有机衔接起来。
+软件系统需主要关注三个问题：
+
+可靠性（Reliability）：出现意外情况如硬件、软件故障、人为失误等，系统...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/10/04</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/01/24</span>
             </div>
             <!-- tags  -->
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "connection-pool">connection-pool</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "db">db</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/10/03/HikariCP-0-DBPool & JDBC基础/" >
-            
-                <span>[HikariCP] DBPool &amp; JDBC基础</span>
-        </a>
-        <div class="abstract-content">
-            <blockquote>
-<p>工作中负责了一个和数据源交互很重的模块，并独立开启重写任务。其中一个很重要的变化就是将 15 年源代码中所采用的一代 DBCP 换成 HikariCP。因为这个模块与池的交互实在太深了，所以我必须要比常人对 HikariCP 有更好的理解，所以想写一篇纪要进行总结，文章很多内容来自《HikariCP数据库连接池实战》。</p>
-</blockquote>
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/10/03</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "connection-pool">connection-pool</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "db">db</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "DDIA">DDIA</a>
     
 </div>
             
@@ -657,7 +697,7 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     <!-- paginator  -->
     
     <nav class="page-nav">
-        <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">NEXT &#62;</a>
+        <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/">NEXT &#62;</a>
     </nav>
     
 </main>
@@ -1424,9 +1464,407 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 42
+        Total : 64
         </div>
         <!-- search  -->
         
@@ -1437,8 +1875,127 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
     
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/基于Kubeadm离线安装Kubernetes/" >基于Kubeadm离线安装Kubernetes</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2021/09/14/Kubernetes相关记录/" >Kubernetes相关记录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/Docker容器实战-网络相关/" >容器实战 - 网络相关</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/19</span><a class="archive-post-title" href= "/2021/07/19/朝花夕拾-Linux-Shell-文本处理/" >朝花夕拾 - Linux Shell 文本处理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2021/07/15/Clickhouse/" >Clickhouse 概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/Linux宿主机及Docker监控/" >Linux宿主机及Docker监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2021/05/16/Linux性能优化-内存篇/" >Linux性能优化-内存篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2021/03/24/Redis-集群/" >Redis-集群</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2021/03/15/Kubernetes-入门/" >Kubernetes 入门笔记</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2021/01/24/DDIA-读书整理-3-数据存储与检索/" >DDIA 读书整理- 1.可靠、可拓展与可维护的应用系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2021/01/24/DDIA-读书整理-1-可靠、可拓展与可维护的应用系统/" >DDIA 读书整理- 1.可靠、可拓展与可维护的应用系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2021/01/02/Docker-引擎结构与底层原理/" >Docker 引擎结构与底层原理</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
     <div class="archive-year"> 2020 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span><a class="archive-post-title" href= "/2020/12/17/Greenplum-Spark-数据传输工具-Greenplum-Spark-Connector/" >Greenplum-Spark 数据传输工具: Greenplum-Spark Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span><a class="archive-post-title" href= "/2020/12/16/Linux性能优化-网络性能篇/" >Linux性能优化-网络性能篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/Linux性能优化-CPU篇/" >Linux性能优化-CPU篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href= "/2020/11/30/Spark/" >[Untitled Post]</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span><a class="archive-post-title" href= "/2020/08/30/JVM-内存区域与垃圾收集器/" >JVM-内存区域与垃圾收集器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/Redis-持久化/" >Redis-持久化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2020/03/29/Docker-网络综述/" >Docker 网络综述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span><a class="archive-post-title" href= "/2020/03/14/Redis-复制/" >Redis 复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span><a class="archive-post-title" href= "/2020/03/05/Greenplum-要点概述/" >Greenplum 要点概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/27</span><a class="archive-post-title" href= "/2020/02/27/曼昆经济学原理-7th-Ch1-经济学十大原理/" >曼昆经济学原理(7th) CH1 经济学十大原理</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1531,12 +2088,12 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
         </li>
     
     
@@ -1664,17 +2221,27 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
+        <span class="sidebar-tag-name" data-tags="clickhouse"><span class="iconfont-archer">&#xe606;</span>clickhouse</span>
+    
         <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="DDIA, 数据库"><span class="iconfont-archer">&#xe606;</span>DDIA, 数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="docker"><span class="iconfont-archer">&#xe606;</span>docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DDIA"><span class="iconfont-archer">&#xe606;</span>DDIA</span>
+    
+        <span class="sidebar-tag-name" data-tags="greenplum"><span class="iconfont-archer">&#xe606;</span>greenplum</span>
     
         <span class="sidebar-tag-name" data-tags="connection-pool"><span class="iconfont-archer">&#xe606;</span>connection-pool</span>
     
         <span class="sidebar-tag-name" data-tags="db"><span class="iconfont-archer">&#xe606;</span>db</span>
     
+        <span class="sidebar-tag-name" data-tags="spark"><span class="iconfont-archer">&#xe606;</span>spark</span>
+    
         <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
     
         <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
-    
-        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
     
         <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
     
@@ -1688,15 +2255,27 @@ Hive 适用于数据分析场景以及对实时性要求不高的场合。其优
     
         <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
     
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
         <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+        <span class="sidebar-tag-name" data-tags="monitor"><span class="iconfont-archer">&#xe606;</span>monitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="cpu"><span class="iconfont-archer">&#xe606;</span>cpu</span>
+    
+        <span class="sidebar-tag-name" data-tags="memory"><span class="iconfont-archer">&#xe606;</span>memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="network"><span class="iconfont-archer">&#xe606;</span>network</span>
     
         <span class="sidebar-tag-name" data-tags="cache"><span class="iconfont-archer">&#xe606;</span>cache</span>
     
         <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
     
-        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+        <span class="sidebar-tag-name" data-tags="micrometer"><span class="iconfont-archer">&#xe606;</span>micrometer</span>
     
-        <span class="sidebar-tag-name" data-tags="metrics"><span class="iconfont-archer">&#xe606;</span>metrics</span>
+        <span class="sidebar-tag-name" data-tags="prometheus"><span class="iconfont-archer">&#xe606;</span>prometheus</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -1731,13 +2310,33 @@ jsonContent:
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
+        <span class="sidebar-category-name" data-categories="db"><span class="iconfont-archer">&#xe60a;</span>db</span>
+    
         <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="分布式"><span class="iconfont-archer">&#xe60a;</span>分布式</span>
+    
+        <span class="sidebar-category-name" data-categories="docker"><span class="iconfont-archer">&#xe60a;</span>docker</span>
     
         <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
     
+        <span class="sidebar-category-name" data-categories="k8s"><span class="iconfont-archer">&#xe60a;</span>k8s</span>
+    
         <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
     
+        <span class="sidebar-category-name" data-categories="linux-docker-monitor"><span class="iconfont-archer">&#xe60a;</span>linux-docker-monitor</span>
+    
+        <span class="sidebar-category-name" data-categories="linux"><span class="iconfont-archer">&#xe60a;</span>linux</span>
+    
+        <span class="sidebar-category-name" data-categories="缓存"><span class="iconfont-archer">&#xe60a;</span>缓存</span>
+    
         <span class="sidebar-category-name" data-categories="BigData"><span class="iconfont-archer">&#xe60a;</span>BigData</span>
+    
+        <span class="sidebar-category-name" data-categories="经济学"><span class="iconfont-archer">&#xe60a;</span>经济学</span>
+    
+        <span class="sidebar-category-name" data-categories="java-monitor"><span class="iconfont-archer">&#xe60a;</span>java-monitor</span>
+    
+        <span class="sidebar-category-name" data-categories="monitor"><span class="iconfont-archer">&#xe60a;</span>monitor</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>

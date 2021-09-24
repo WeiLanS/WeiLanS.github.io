@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Redis-集群 · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Redis-集群</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://i.loli.net/2021/09/24/vFZ6WV7euQMl5zN.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Redis-集群
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "redis">redis</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.3k</span>阅读时长: <span class="post-count reading-time">12 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/03/24</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>Redis Cluster 是 Redis 的分布式解决方案，在3.0版本正式推出，有效地解决了Redis分布式方面的需求。当遇到<strong>单机内存、并发、流量等瓶颈</strong>时，可以采用 Cluster 架构方案达到负载均衡的目的。</p>
+<h2 id="1-数据分布"><a href="#1-数据分布" class="headerlink" title="1. 数据分布"></a>1. 数据分布</h2><p>分布式数据库首先要解决把整个数据集按照分区规则映射到多个节点的问题，即把数据集划分到多个节点上，每个节点负责整体数据的一个子集，常规的有：哈希分区、顺序分区。主要的哈希分区规则有：<strong>节点取余分区</strong>、<strong>一致性哈希分区</strong>、<strong>虚拟槽分区</strong>。</p>
+<h3 id="节点取余分区"><a href="#节点取余分区" class="headerlink" title="节点取余分区"></a>节点取余分区</h3><p><code>hash(key) % N</code>计算出哈希值，用来决定数据映射到哪一个节点上。</p>
+<p>缺点：当节点数量变化时，如扩容或收缩节点，数据节点映射关系需要重新计算，会导致数据的重新迁移。</p>
+<p>优点：简单性，常用于数据库的分库分表规则。</p>
+<p>一般采用<strong>预分区</strong>的方式，提前根据数据量规划好分区数，比如划分为512或1024张表，保证可支撑未来一段时间的数据量，再根据负载情况将表迁移到其他数据库中。扩容时通常采用<strong>翻倍扩容</strong>，避免数据映射全部被打乱导致全量迁移的情况。</p>
+<h3 id="一致性哈希分区"><a href="#一致性哈希分区" class="headerlink" title="一致性哈希分区"></a>一致性哈希分区</h3><p>思路是为系统中每个节点分配一个token，范围一般在0~2^32，这些token构成一个哈希环。数据读写执行节点查找操作时，先根据key计算hash值，然后顺时针找到第一个大于等于该哈希值的token节点。</p>
+<p>优点：加入和删除节点只影响哈希环中相邻的节点，对其他节点无影响。</p>
+<p>缺点：增删节点需手动处理或忽略部分数据，因此一致性哈希多用于缓存场景；节点较少时，节点的变化将大范围影响数据映射；增减节点时为保证数据和负载的均衡需增加一倍或减去一半节点。</p>
+<h3 id="虚拟槽分区"><a href="#虚拟槽分区" class="headerlink" title="虚拟槽分区"></a>虚拟槽分区</h3><p>使用分散度良好的哈希函数把所有数据映射到一个固定范围的整数集合中，整数定义为槽（slot）。这个范围一般远远大于节点数，比如Redis Cluster槽范围是0~16383。</p>
+<p><strong>槽是集群内数据管理和迁移的基本单位。</strong>采用大范围槽的主要目的是为了方便<strong>数据拆分和集群扩展</strong>，每个节点会负责一定数量的槽。</p>
+<h5 id="Redis数据分布"><a href="#Redis数据分布" class="headerlink" title="Redis数据分布"></a>Redis数据分布</h5><p>采用虚拟槽分区，所有的键根据哈希函数映射到 0~16383 整数槽内，计算公式：<code>slot = CRC16(key) &amp; 16383</code>。每一个节点负责维护一部分槽以及槽所映射的键值数据。</p>
+<p>这种 Redis 虚拟槽分区的特点：</p>
+<ul>
+<li>解耦数据和节点之间的关系，简化了节点扩容和收缩难度。</li>
+<li>节点自身维护槽的映射关系，不需要客户端或者代理服务维护槽分区元数据。</li>
+<li>支持节点、槽、键之间的映射查询，用于数据路由、在线伸缩等场景。</li>
+</ul>
+<p>不过 Redis 集群存在功能限制：</p>
+<ul>
+<li>key 批量操作支持有限。如 mset、mget，目前只支持<strong>具有相同slot值的key执行批量</strong>操作。对于映射为不同slot值的key由于执行mget、mget等操作可能存在于多个节点上因此不被支持。</li>
+<li>key事务操作支持有限。同理只支持多key在同一节点上的事务操作，当多个key分布在不同的节点上时无法使用事务功能。</li>
+<li>key作为数据分区的最小粒度，因此不能将一个大的键值对象如hash、list等映射到不同的节点。</li>
+<li>不支持多数据库空间。单机下的Redis可以支持16个数据库，集群模式下只能使用一个数据库空间，即db0。</li>
+<li>复制结构只支持一层，从节点只能复制主节点，不支持嵌套树状复制结构。</li>
+</ul>
+<h2 id="2-搭建集群"><a href="#2-搭建集群" class="headerlink" title="2. 搭建集群"></a>2. 搭建集群</h2><p>配置示例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#节点端口</span></span><br><span class="line">port 6379</span><br><span class="line"><span class="comment"># 开启集群模式</span></span><br><span class="line">cluster-enabled yes</span><br><span class="line"><span class="comment"># 节点超时时间, 单位毫秒</span></span><br><span class="line">cluster-node-timeout 15000</span><br><span class="line"><span class="comment"># 集群内部配置文件</span></span><br><span class="line">cluster-config-file <span class="string">"nodes-6379.conf"</span></span><br><span class="line">daemonize yes</span><br></pre></td></tr></table></figure>
+
+<p>启动：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">redis-server redis-6379.conf</span><br><span class="line">redis-server redis-6380.conf</span><br><span class="line">redis-server redis-6381.conf</span><br><span class="line">redis-server redis-6382.conf</span><br><span class="line">redis-server redis-6383.conf</span><br><span class="line">redis-server redis-6384.conf</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>第一次启动时如果没有集群配置文件，它会自动创建一份，文件名称采用<code>cluster-config-file</code>参数项控制，建议采用<code>node-{port}.conf</code>格式定义。</p>
+<p>当集群内节点信息发生变化，如添加节点、节点下线、故障转移等。节点会自动保存集群状态到配置文件中。需要注意的是，Redis自动维护集群配置文件，不要手动修改，防止节点重启时产生集群信息错乱。</p>
+<p>文件内容记录了集群初始状态，这里最重要的是节点ID。节点ID不同于运行ID。节点ID在集群初始化时只创建一次，节点重启时会加载集群配置文件进行重用，而Redis的运行ID每次重启都会变化。</p>
+</blockquote>
+<p>使用meet命令握手：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt;cluster meet 127.0.0.1 6380</span><br><span class="line">127.0.0.1:6379&gt;cluster meet 127.0.0.1 6381</span><br><span class="line">127.0.0.1:6379&gt;cluster meet 127.0.0.1 6382</span><br><span class="line">127.0.0.1:6379&gt;cluster meet 127.0.0.1 6383</span><br><span class="line">127.0.0.1:6379&gt;cluster meet 127.0.0.1 6384</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>查看集群节点：<code>cluster nodes</code></p>
+<p>查看集群状态： <code>cluster info</code> （此时发现 cluster_state:fail ，是因为未分配槽）</p>
+</blockquote>
+<p>分配槽：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">redis-cli -h 127.0.0.1 -p 6379 cluster addslots &#123;0..5461&#125;</span><br><span class="line">redis-cli -h 127.0.0.1 -p 6380 cluster addslots &#123;5462..10922&#125;</span><br><span class="line">redis-cli -h 127.0.0.1 -p 6381 cluster addslots &#123;10923..16383&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>cluster replicate {nodeId}</code>命令让一个节点成为从节点：</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6382&gt;cluster replicate &lt;6379节点ID&gt;</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6383&gt;cluster replicate &lt;6380节点ID&gt;</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6384&gt;cluster replicate &lt;6381节点ID&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-节点通信"><a href="#3-节点通信" class="headerlink" title="3. 节点通信"></a>3. 节点通信</h2><p>Redis Cluster 采用 P2P 的 <strong>Gossip</strong>（流言）协议来维护节点元数据信息，Gossip 协议工作原理就是节点彼此不断通信交换信息，一段时间后所有的节点都会知道集群完整的信息，这种方式类似流言传播。</p>
+<ul>
+<li><p>集群中的每个节点都会单独开辟TCP通道，用于节点之间彼此通信，通信端口号在基础端口上加10000。</p>
+</li>
+<li><p>每个节点在固定周期内通过特定规则选择几个节点发送ping消息。</p>
+</li>
+<li><p>接收到ping消息的节点用pong消息作为响应</p>
+</li>
+</ul>
+<h3 id="Gossip"><a href="#Gossip" class="headerlink" title="Gossip"></a>Gossip</h3><p>常用的 Gossip 消息可分为：ping 消息、pong 消息、meet 消息、fail 消息等。</p>
+<ul>
+<li>meet 消息：用于通知新节点加入。消息发送者通知接收者加入到当前集群，meet 消息通信正常完成后，接收节点会加入到集群中并进行周期性的 ping、pong消息交换。</li>
+<li>ping 消息：集群内交换最频繁的消息，集群内每个节点每秒向多个其他节点发送 ping 消息，用于检测节点是否在线和交换彼此状态信息。ping 消息发送封装了自身节点和部分其他节点的状态数据。</li>
+<li>pong 消息：当接收到 ping、meet 消息时，作为响应消息回复给发送方确认消息正常通信。pong 消息内部封装了自身状态数据。节点也可以向集群内广播自身的 pong 消息来通知整个集群对自身状态进行更新。</li>
+<li>fail 消息：当节点判定集群内另一个节点下线时，会向集群内广播一个fail消息，其他节点接收到fail消息之后把对应节点更新为下线状态。</li>
+</ul>
+<h4 id="节点选择"><a href="#节点选择" class="headerlink" title="节点选择"></a>节点选择</h4><p>集群内每个节点维护定时任务默认每秒执行10次，每秒会随机选取5个节点找出最久没有通信的节点发送ping消息。</p>
+<p>如果发现节点最近一次接受pong消息的时间大于cluster_node_timeout/2，则立刻发送ping消息，防止该节点信息太长时间未更新。</p>
+<h2 id="4-集群伸缩"><a href="#4-集群伸缩" class="headerlink" title="4. 集群伸缩"></a>4. 集群伸缩</h2><p>集群的水平伸缩的上层原理：集群伸缩=槽和数据在节点之间的移动</p>
+<h3 id="扩容集群"><a href="#扩容集群" class="headerlink" title="扩容集群"></a>扩容集群</h3><h4 id="A-准备新节点"><a href="#A-准备新节点" class="headerlink" title="A. 准备新节点"></a>A. 准备新节点</h4><h4 id="B-加入集群"><a href="#B-加入集群" class="headerlink" title="B. 加入集群"></a>B. 加入集群</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 准备节点</span></span><br><span class="line">redis-server conf/redis-6385.conf</span><br><span class="line">redis-server conf/redis-6386.conf</span><br><span class="line"><span class="comment"># 加入集群</span></span><br><span class="line">127.0.0.1:6379&gt; cluster meet 127.0.0.1 6385</span><br><span class="line">127.0.0.1:6379&gt; cluster meet 127.0.0.1 6386</span><br><span class="line"><span class="comment"># 查看状态</span></span><br><span class="line">cluster nodes</span><br></pre></td></tr></table></figure>
+
+<h4 id="C-迁移槽和数据"><a href="#C-迁移槽和数据" class="headerlink" title="C. 迁移槽和数据"></a>C. 迁移槽和数据</h4><h5 id="迁移槽"><a href="#迁移槽" class="headerlink" title="迁移槽"></a>迁移槽</h5><p>槽是Redis集群管理数据的基本单位，首先需要为新节点制定槽的迁移计划，确定原有节点的哪些槽需要迁移到新节点。</p>
+<p>迁移计划需要确保每个节点负责相似数量的槽，从而保证各节点的数据均匀。例如，在集群中加入6385节点。加入6385节点后，原有节点负责的槽数量从6380变为4096个。</p>
+<h5 id="迁移数据"><a href="#迁移数据" class="headerlink" title="迁移数据"></a>迁移数据</h5><ol>
+<li>对目标节点发送<code>cluster setslot {slot} importing {sourceNodeId}</code>命令，让目标节点准备导入槽的数据。</li>
+<li>对源节点发送<code>cluster setslot {slot} migrating {targetNodeId}</code>命令，让源节点准备迁出槽的数据。</li>
+<li>源节点循环执行<code>cluster getkeysinslot {slot} {count}</code>命令，获取count个属于槽{slot}的键。</li>
+<li>在源节点上执行<code>migrate {targetIp} {targetPort} &quot;&quot; 0 {timeout} keys {keys...}</code>命令，把获取的键通过流水线（pipeline）机制批量迁移到目标节点，批量迁移版本的<code>migrate</code>命令在Redis3.0.6以上版本提供，之前的migrate命令只能单个键迁移。对于大量key的场景，批量键迁移将极大降低节点之间网络IO次数。</li>
+<li>重复执行步骤3和步骤4直到槽下所有的键值数据迁移到目标节点。</li>
+<li>向集群内所有主节点发送<code>cluster setslot {slot} node {targetNodeId}</code>命令，通知槽分配给目标节点。为了保证槽节点映射变更及时传播，需要遍历发送给所有主节点更新被迁移的槽指向新节点。</li>
+</ol>
+<p>伪代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">move_slot</span><span class="params">(source,target,slot)</span>:</span></span><br><span class="line">    <span class="comment"># 目标节点准备导入槽</span></span><br><span class="line">    target.cluster(<span class="string">"setslot"</span>,slot,<span class="string">"importing"</span>,source.nodeId);</span><br><span class="line">    <span class="comment"># 源节点准备全出槽</span></span><br><span class="line">    source.cluster(<span class="string">"setslot"</span>,slot,<span class="string">"migrating"</span>,target.nodeId);</span><br><span class="line">    <span class="keyword">while</span> true :</span><br><span class="line">        <span class="comment"># 批量从源节点获取键</span></span><br><span class="line">        keys = source.cluster(<span class="string">"getkeysinslot"</span>,slot,pipeline_size);</span><br><span class="line">        <span class="keyword">if</span> keys.length == <span class="number">0</span>:</span><br><span class="line">            <span class="comment"># 键列表为空时, 退出循环</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="comment"># 批量迁移键到目标节点</span></span><br><span class="line">        source.call(<span class="string">"migrate"</span>,target.host,target.port,<span class="string">""</span>,<span class="number">0</span>,timeout,<span class="string">"keys"</span>,keys);</span><br><span class="line">    <span class="comment"># 向集群所有主节点通知槽被分配给目标节点</span></span><br><span class="line">    <span class="keyword">for</span> node <span class="keyword">in</span> nodes:</span><br><span class="line">        <span class="keyword">if</span> node.flag == <span class="string">"slave"</span>:</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        node.cluster(<span class="string">"setslot"</span>,slot,<span class="string">"node"</span>,target.nodeId);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>生成环境实际操作时涉及大量槽并且每个槽对应非常多的键使用，一般使用<code>redis-trib.rb</code>。</p>
+</blockquote>
+<h5 id="添加从节点"><a href="#添加从节点" class="headerlink" title="添加从节点"></a>添加从节点</h5><p>6385、6386节点加入到集群，节点6385迁移了部分槽和数据作为主节点，需把6386作为6385的从节点。</p>
+<p>在集群模式下 slaveof 添加从节点操作不再支持，需使用<code>cluster replicate</code>进行操作。</p>
+<h2 id="5-请求路由"><a href="#5-请求路由" class="headerlink" title="5. 请求路由"></a>5. 请求路由</h2><p>客户端发送键命令至任意节点，会计算槽和对应节点，若发现指向自己则执行命令，若不是自己则回复MOVED。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; <span class="built_in">set</span> key:<span class="built_in">test</span>:2 value-2</span><br><span class="line">(error) MOVED 9252 127.0.0.1:6380</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>cluster keyslot key:test:1</code>： 返回该key值对应的槽</p>
+<p><code>cluster nodes</code>：可以看到槽对应的节点</p>
+</blockquote>
+<p>redis-cli使用-c参数时支持自动重定向，但实质是客户端接到MOVED信息后再次发送请求，并不是在redis节点中完成请求转发。</p>
+<p>注意：如果键内容包含<code>{</code>和<code>}</code>大括号字符，则计算槽的有效部分是括号内的内容；否则采用键的全内容计算槽。这提供了不同的键具备相同slot的功能，常用于Redis IO优化，如使用mget等命令优化批量调用。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; cluster keyslot key:&#123;hash_tag&#125;:111</span><br><span class="line">(<span class="built_in">integer</span>) 2515</span><br><span class="line">127.0.0.1:6379&gt; cluster keyslot key:&#123;hash_tag&#125;:222</span><br><span class="line">(<span class="built_in">integer</span>) 2515</span><br></pre></td></tr></table></figure>
+
+<h3 id="Smart客户端"><a href="#Smart客户端" class="headerlink" title="Smart客户端"></a>Smart客户端</h3><p><code>Dummy（傀儡）客户端</code>：根据MOVED重定向机制，客户端随机连接集群内任一Redis获取键所在节点。它优点是代码实现简单，对客户端协议影响较小。弊端很明显，每次执行键命令额外增加了IO开销，这不是Redis集群高效的使用方式。</p>
+<p><code>Smart客户端</code>：通过在内部维护slot→node的映射关系，本地就可实现键到节点的查找，从而保证IO效率的最大化，而MOVED重定向负责协助Smart客户端更新slot→node映射。</p>
+<p>以Jedis为例：</p>
+<p>初始化：JedisCluster 会选择一个运行节点，使用<code>cluster slots</code>初始化槽和节点映射关系，缓存结果，并为每个节点创建唯一的JedisPool连接池。</p>
+<p>执行键命令：</p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/05/16/Linux性能优化-内存篇/" title= "Linux性能优化-内存篇">
+                    <div class="nextTitle">Linux性能优化-内存篇</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/03/15/Kubernetes-入门/" title= "Kubernetes 入门笔记">
+                    <div class="prevTitle">Kubernetes 入门笔记</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-数据分布"><span class="toc-number">1.</span> <span class="toc-text">1. 数据分布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#节点取余分区"><span class="toc-number">1.1.</span> <span class="toc-text">节点取余分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一致性哈希分区"><span class="toc-number">1.2.</span> <span class="toc-text">一致性哈希分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#虚拟槽分区"><span class="toc-number">1.3.</span> <span class="toc-text">虚拟槽分区</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Redis数据分布"><span class="toc-number">1.3.0.1.</span> <span class="toc-text">Redis数据分布</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-搭建集群"><span class="toc-number">2.</span> <span class="toc-text">2. 搭建集群</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-节点通信"><span class="toc-number">3.</span> <span class="toc-text">3. 节点通信</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Gossip"><span class="toc-number">3.1.</span> <span class="toc-text">Gossip</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#节点选择"><span class="toc-number">3.1.1.</span> <span class="toc-text">节点选择</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-集群伸缩"><span class="toc-number">4.</span> <span class="toc-text">4. 集群伸缩</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#扩容集群"><span class="toc-number">4.1.</span> <span class="toc-text">扩容集群</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#A-准备新节点"><span class="toc-number">4.1.1.</span> <span class="toc-text">A. 准备新节点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#B-加入集群"><span class="toc-number">4.1.2.</span> <span class="toc-text">B. 加入集群</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#C-迁移槽和数据"><span class="toc-number">4.1.3.</span> <span class="toc-text">C. 迁移槽和数据</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#迁移槽"><span class="toc-number">4.1.3.1.</span> <span class="toc-text">迁移槽</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#迁移数据"><span class="toc-number">4.1.3.2.</span> <span class="toc-text">迁移数据</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#添加从节点"><span class="toc-number">4.1.3.3.</span> <span class="toc-text">添加从节点</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-请求路由"><span class="toc-number">5.</span> <span class="toc-text">5. 请求路由</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Smart客户端"><span class="toc-number">5.1.</span> <span class="toc-text">Smart客户端</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 64
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/基于Kubeadm离线安装Kubernetes/" >基于Kubeadm离线安装Kubernetes</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2021/09/14/Kubernetes相关记录/" >Kubernetes相关记录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/Docker容器实战-网络相关/" >容器实战 - 网络相关</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/19</span><a class="archive-post-title" href= "/2021/07/19/朝花夕拾-Linux-Shell-文本处理/" >朝花夕拾 - Linux Shell 文本处理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2021/07/15/Clickhouse/" >Clickhouse 概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/Linux宿主机及Docker监控/" >Linux宿主机及Docker监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2021/05/16/Linux性能优化-内存篇/" >Linux性能优化-内存篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2021/03/24/Redis-集群/" >Redis-集群</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2021/03/15/Kubernetes-入门/" >Kubernetes 入门笔记</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2021/01/24/DDIA-读书整理-3-数据存储与检索/" >DDIA 读书整理- 1.可靠、可拓展与可维护的应用系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2021/01/24/DDIA-读书整理-1-可靠、可拓展与可维护的应用系统/" >DDIA 读书整理- 1.可靠、可拓展与可维护的应用系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2021/01/02/Docker-引擎结构与底层原理/" >Docker 引擎结构与底层原理</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span><a class="archive-post-title" href= "/2020/12/17/Greenplum-Spark-数据传输工具-Greenplum-Spark-Connector/" >Greenplum-Spark 数据传输工具: Greenplum-Spark Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span><a class="archive-post-title" href= "/2020/12/16/Linux性能优化-网络性能篇/" >Linux性能优化-网络性能篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/Linux性能优化-CPU篇/" >Linux性能优化-CPU篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href= "/2020/11/30/Spark/" >[Untitled Post]</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span><a class="archive-post-title" href= "/2020/08/30/JVM-内存区域与垃圾收集器/" >JVM-内存区域与垃圾收集器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/Redis-持久化/" >Redis-持久化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2020/03/29/Docker-网络综述/" >Docker 网络综述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span><a class="archive-post-title" href= "/2020/03/14/Redis-复制/" >Redis 复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span><a class="archive-post-title" href= "/2020/03/05/Greenplum-要点概述/" >Greenplum 要点概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/27</span><a class="archive-post-title" href= "/2020/02/27/曼昆经济学原理-7th-Ch1-经济学十大原理/" >曼昆经济学原理(7th) CH1 经济学十大原理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite (一) - Adapter</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href= "/2020/01/06/大数据入门草稿-Hive/" >大数据入门草稿 - Hive</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span><a class="archive-post-title" href= "/2019/12/18/HikariCP-2-HikariCP-配置项/" >[HikariCP] HikariCP 配置项 </a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span><a class="archive-post-title" href= "/2019/12/16/大数据入门草稿-Hadoop/" >大数据入门草稿 - Hadoop</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span><a class="archive-post-title" href= "/2019/12/08/指标监控-2-云原生监控系统-Prometheus/" >[指标监控] 云原生监控系统 Prometheus</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/29</span><a class="archive-post-title" href= "/2019/11/29/指标监控-1-JVM-指标框架-Micrometer/" >[指标监控] JVM 指标框架 Micrometer</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2019/10/08/并发札记-8-原子操作类/" >[回顾并发基础] 原子操作类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2019/10/05/并发札记-7-JUC中的并发队列/" >[回顾并发基础] JUC中的并发队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/04</span><a class="archive-post-title" href= "/2019/10/04/HikariCP-1-高性能的秘密/" >[HikariCP] HikariCP为什么快</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/03</span><a class="archive-post-title" href= "/2019/10/03/HikariCP-0-DBPool & JDBC基础/" >[HikariCP] DBPool & JDBC基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-4-常用Lock实现类/" >[回顾并发基础] ReentrantLock & ReentrantReadWriteLock & StampedLock</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-5-常用并发工具类/" >[回顾并发基础] 常用并发工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span><a class="archive-post-title" href= "/2019/09/21/Java并发札记-3-Lock & AQS/" >[回顾并发基础] Lock & AQS</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2019/09/11/使用ClassLoader在SpringBoot打包文件中获取嵌套jar/" >使用自定义ClassLoader加载SpringBoot打包文件中嵌套jar驱动</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2019/09/07/JVM-类加载机制/" >JVM 类加载机制解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2019/08/24/Java并发札记-0-并发问题的根源/" >[回顾并发基础] 并发问题的根源</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" >Spring Data Redis 实践 (v2.1.7)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" >[Leetcode单排] 二叉树的序列化与反序列化 (N297)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2019/08/10/Leetcode单排- 树类题目集合1-N102-N107-N429-N872-N112-N113/" >[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树相关Easy题-N100-N101-N104-N110-N111-N572-N965/" >[Leetcode单排] 树相关Easy题 (N100 N101 N104 N110 N111 N572 N965)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >[Leetcode单排] 树的遍历 (N94 N589 N590)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >[Leetcode单排] 划分为k个相等的子集 (N698)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-01矩阵-N542/" >[Leetcode单排] 01矩阵 (N542)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >[Leetcode单排] 运算表达式设优先级求值 (N241)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-分割回文串-N131/" >[Leetcode单排] 分割回文串 (N131)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" >[Leetcode单排] 复原IP地址 (N93)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2019/08/01/Leetcode单排-单词接龙-N127/" >[Leetcode单排] 单词接龙 (N127)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span><a class="archive-post-title" href= "/2019/07/31/Clojure-in-Action-Clojure-构件/" >Clojure in Action: Clojure 构件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >[Leetcode单排] 单词搜索 (N79 N212)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clickhouse"><span class="iconfont-archer">&#xe606;</span>clickhouse</span>
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="DDIA, 数据库"><span class="iconfont-archer">&#xe606;</span>DDIA, 数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="docker"><span class="iconfont-archer">&#xe606;</span>docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DDIA"><span class="iconfont-archer">&#xe606;</span>DDIA</span>
+    
+        <span class="sidebar-tag-name" data-tags="greenplum"><span class="iconfont-archer">&#xe606;</span>greenplum</span>
+    
+        <span class="sidebar-tag-name" data-tags="connection-pool"><span class="iconfont-archer">&#xe606;</span>connection-pool</span>
+    
+        <span class="sidebar-tag-name" data-tags="db"><span class="iconfont-archer">&#xe606;</span>db</span>
+    
+        <span class="sidebar-tag-name" data-tags="spark"><span class="iconfont-archer">&#xe606;</span>spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
+        <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+        <span class="sidebar-tag-name" data-tags="monitor"><span class="iconfont-archer">&#xe606;</span>monitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="cpu"><span class="iconfont-archer">&#xe606;</span>cpu</span>
+    
+        <span class="sidebar-tag-name" data-tags="memory"><span class="iconfont-archer">&#xe606;</span>memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="network"><span class="iconfont-archer">&#xe606;</span>network</span>
+    
+        <span class="sidebar-tag-name" data-tags="cache"><span class="iconfont-archer">&#xe606;</span>cache</span>
+    
+        <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="micrometer"><span class="iconfont-archer">&#xe606;</span>micrometer</span>
+    
+        <span class="sidebar-tag-name" data-tags="prometheus"><span class="iconfont-archer">&#xe606;</span>prometheus</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="db"><span class="iconfont-archer">&#xe60a;</span>db</span>
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="分布式"><span class="iconfont-archer">&#xe60a;</span>分布式</span>
+    
+        <span class="sidebar-category-name" data-categories="docker"><span class="iconfont-archer">&#xe60a;</span>docker</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="k8s"><span class="iconfont-archer">&#xe60a;</span>k8s</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+        <span class="sidebar-category-name" data-categories="linux-docker-monitor"><span class="iconfont-archer">&#xe60a;</span>linux-docker-monitor</span>
+    
+        <span class="sidebar-category-name" data-categories="linux"><span class="iconfont-archer">&#xe60a;</span>linux</span>
+    
+        <span class="sidebar-category-name" data-categories="缓存"><span class="iconfont-archer">&#xe60a;</span>缓存</span>
+    
+        <span class="sidebar-category-name" data-categories="BigData"><span class="iconfont-archer">&#xe60a;</span>BigData</span>
+    
+        <span class="sidebar-category-name" data-categories="经济学"><span class="iconfont-archer">&#xe60a;</span>经济学</span>
+    
+        <span class="sidebar-category-name" data-categories="java-monitor"><span class="iconfont-archer">&#xe60a;</span>java-monitor</span>
+    
+        <span class="sidebar-category-name" data-categories="monitor"><span class="iconfont-archer">&#xe60a;</span>monitor</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

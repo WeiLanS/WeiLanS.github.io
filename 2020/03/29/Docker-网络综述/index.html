@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Hello John">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Hello John">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Docker 网络综述 · JohnShen&#39;s Blog.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >JohnShen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Docker 网络综述</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>JohnShen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(https://i.loli.net/2021/09/24/vFZ6WV7euQMl5zN.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Docker 网络综述
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "docker">docker</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">1.9k</span>阅读时长: <span class="post-count reading-time">8 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/03/29</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="Docker-网络综述"><a href="#Docker-网络综述" class="headerlink" title="Docker 网络综述"></a>Docker 网络综述</h1><h2 id="1-Docker-网络模型"><a href="#1-Docker-网络模型" class="headerlink" title="1. Docker 网络模型"></a>1. Docker 网络模型</h2><p>Docker的网络架构由三个主要部分构成：<code>CNM</code>（<em>Container Networking Mode</em> 容器网络模型）、<code>Libnetwork</code>、<code>驱动</code>。CNM 是设计标准，该方案是开源且支持插接式连接。而 Libnetwork 是 CNM 的具体实现，通过 Go 语言编写实现了 CNM 中列举的核心组件。驱动则以实现特定网络拓扑的形式达成模型扩展。</p>
+<h3 id="CNM"><a href="#CNM" class="headerlink" title="CNM"></a>CNM</h3><img src="https://github.com/docker/labs/raw/master/networking/concepts/img/cnm.png">
+
+<p>CNM 中定义了几个基本元素：</p>
+<ul>
+<li><p>Sandbox 沙盒：Sandbox 作为一个独立的网络栈，管理着网络接口、DNS配置、路由表等。一个 Sandbox 可以包含来自多个网络的不同 Endpoint。Snadbox 的典型实现为  Linux Network Namespace。</p>
+</li>
+<li><p>Endpoint 终端：负责将 Sandbox 连接至网络。其意义就在于服务可使用不同类型的 Driver，不必关心与网络的连接方式。</p>
+</li>
+<li><p>Network 网络：CNM 并没有明确定义 Network 的形式，其典型实现可以是 Linux 网桥或者 VLAN。Network 就是需要进行交互的 Endpoint 的集合。</p>
+</li>
+</ul>
+<h3 id="Libnetwork"><a href="#Libnetwork" class="headerlink" title="Libnetwork"></a>Libnetwork</h3><p>早期 Docker 的网络部分集中在 Daemon 上，后续 Docker 将网络部分从其中拆分并重构一个叫作 Libnetwork 的类库，实现了 CNM 中定义的全部三个组件，还实现了网络控制层和管理层的功能。</p>
+<h3 id="驱动"><a href="#驱动" class="headerlink" title="驱动"></a>驱动</h3><p>驱动负责处理网络连通性和隔离性，Docker 内置的驱动包括：bridge、overlay、MACVLAN、host、none。</p>
+<p>默认情况下，none 、host、bridge 会在每个 Docker host 中存在且无法被移除。当初始化 Swarm 时，两个额外的网络：名为<code>docker_gwbridge</code>的 bridge 网络和名为<code>ingress</code>的 overaly 会自动创建以进行集群通信。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">NETWORK ID          NAME                DRIVER              SCOPE</span><br><span class="line">1475f03fbecb        bridge              bridge              <span class="built_in">local</span></span><br><span class="line">e2d8a4bd86cb        docker_gwbridge     bridge              <span class="built_in">local</span></span><br><span class="line">407c477060e7        host                host                <span class="built_in">local</span></span><br><span class="line">f4zr3zrswlyg        ingress             overlay             swarm</span><br><span class="line">c97909a4b198        none                null                <span class="built_in">local</span></span><br></pre></td></tr></table></figure>
+
+<p>Docker 内置网络驱动借助于 Linux 网络模块，如<strong>Linux bridges</strong>, <strong>network namespaces</strong>, <strong>veth pairs</strong>, <strong>iptables</strong> 来实现复杂网络的转发规则、分隔、管理。</p>
+<h2 id="2-Docker-网络原理基础"><a href="#2-Docker-网络原理基础" class="headerlink" title="2. Docker 网络原理基础"></a>2. Docker 网络原理基础</h2><p>Docker 启动时会在宿主机建立一个名为<code>docker0</code>的虚拟网桥，当启动容器时会基于 <code>docker0</code> 网段划分私有IP，容器内部对应的接口是<code>eth0</code>。</p>
+<p>创建容器时的网络处理如下：</p>
+<ul>
+<li><p>创建一对<code>veth pair</code>放入宿主机和容器中</p>
+</li>
+<li><p>宿主机一端桥接到默认的<code>docker0</code>网桥，具有唯一名称 vethf49dd9f （<code>veth*</code>）</p>
+</li>
+<li><p>进入容器中的一端名称改为 <code>eth0</code>，该网络接口只在容器内可见。</p>
+</li>
+<li><p>从网桥的可用地址中获取一个空闲地址分配给容器中的<code>eth0</code>，并配置默认路由到桥接网卡 <code>veth*</code>。</p>
+</li>
+</ul>
+<p>当容器销毁时，容器内的<code>eth0</code>会随网络命名空间一起被清除，<code>veth*</code>接口也会从<code>docker0</code>中卸载。</p>
+<img src="https://i.loli.net/2020/03/29/wZx1ab5IK2MgeRN.png">
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#宿主机</span></span><br><span class="line">$ ip a</span><br><span class="line">4: docker0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    ···</span><br><span class="line">    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0</span><br><span class="line">    ···</span><br><span class="line">6: vethf49dd9f@if5: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue master docker0 state UP group default</span><br><span class="line">    ···</span><br><span class="line"> </span><br><span class="line">$ brctl show</span><br><span class="line">bridge name	bridge id		STP enabled	interfaces</span><br><span class="line">docker0		8000.0242dbecf190	no		vethf49dd9f</span><br><span class="line"></span><br><span class="line"><span class="comment">#容器</span></span><br><span class="line">$ docker <span class="built_in">exec</span> -it b9 ip a</span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN qlen 1000</span><br><span class="line">    ···</span><br><span class="line">    inet 127.0.0.1/8 scope host lo</span><br><span class="line">    ···</span><br><span class="line">5: eth0@if6: &lt;BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN&gt; mtu 1500 qdisc noqueue state UP</span><br><span class="line">    ···</span><br><span class="line">    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0</span><br><span class="line">    ···</span><br></pre></td></tr></table></figure>
+
+<h3 id="Linux-Network-Namespace"><a href="#Linux-Network-Namespace" class="headerlink" title="Linux Network Namespace"></a>Linux Network Namespace</h3><p>可以手动实践 Linux Network Namespace，创建两个 Namespace 后创建一对<code>veth pair</code>进行连接测试。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建两个 namespace</span></span><br><span class="line">$ ip netns add test1</span><br><span class="line">$ ip netns add test2</span><br><span class="line"><span class="comment"># 查看 namespace</span></span><br><span class="line">$ ip netns ls</span><br><span class="line"><span class="comment"># 创建一对 veth pair</span></span><br><span class="line">$ ip link add veth-test1 <span class="built_in">type</span> veth peer name veth-test2</span><br><span class="line"><span class="comment"># 分别置入两个namespace</span></span><br><span class="line">$ ip link <span class="built_in">set</span> veth-test1 netns test1</span><br><span class="line">$ ip link <span class="built_in">set</span> veth-test2 netns test2</span><br><span class="line"><span class="comment"># 设置IP</span></span><br><span class="line">$ ip netns <span class="built_in">exec</span> test1 ip addr add 192.168.1.1/24 dev veth-test1</span><br><span class="line">$ ip netns <span class="built_in">exec</span> test2 ip addr add 192.168.1.2/24 dev veth-test2</span><br><span class="line"><span class="comment"># 将link从DOWN置为UP</span></span><br><span class="line">$ ip netns <span class="built_in">exec</span> test1 ip link <span class="built_in">set</span> dev veth-test1 up</span><br><span class="line">$ ip netns <span class="built_in">exec</span> test2 ip link <span class="built_in">set</span> dev veth-test2 up</span><br><span class="line"><span class="comment"># ping测试</span></span><br><span class="line">$ ip netns <span class="built_in">exec</span> test1 ping 192.168.1.2</span><br><span class="line">$ ip netns <span class="built_in">exec</span> test2 ping 192.168.1.1</span><br></pre></td></tr></table></figure>
+
+<p>2 个 namespace 之间可以借助 <code>veth pair</code>通信 ，多个 namespace 之间的通信则可以使用 bridge 来转接，不然每两个 namespace 都去配 <code>veth pair</code> 将会是一件麻烦的事。</p>
+<h2 id="3-单机桥接网络"><a href="#3-单机桥接网络" class="headerlink" title="3. 单机桥接网络"></a>3. 单机桥接网络</h2><p>Linux Docker 创建单机桥接网络采用内置桥接驱动（Windows Docker 采用内置的 NAT 驱动）。默认情况下用户若不指定<code>--network</code>，新建的容器都会连接至该网络。默认的 <code>bridge</code>网络被映射到<code>docker0</code>网桥上。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker network inspect bridge | grep com.docker.network.bridge.name</span><br><span class="line"><span class="string">"com.docker.network.bridge.name"</span>: <span class="string">"docker0"</span>,</span><br></pre></td></tr></table></figure>
+
+<p>可以自己创建一个桥接网络 localnet，Docker 桥接网络 localnet 就与 Linux 上的网桥 br-eef11882ad29 一一对应。新建的容器就可以指定<code>--network localnet</code>使用此网络。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ docker network create -d bridge localnet</span><br><span class="line">$ brctl show</span><br><span class="line">bridge name       bridge id             STP enabled    interfaces</span><br><span class="line">docker0           8000.0242dbecf190     no             </span><br><span class="line">br-eef11882ad29   8000.02421164377f     no</span><br></pre></td></tr></table></figure>
+
+<p>使用新建的桥接网络和默认 Bridge 的区别在于：默认 Bridge 网络不支持通过 Docker DNS 服务进行域名解析的，但自定义桥接网络可以。因为 test2 运行了一个本地 DNS 解析器，该解析器将请求转发到了 Docker 内部DNS服务器当中。DNS服务器中记录了容器启动时通过<code>--name</code>或者<code>--net-alias</code>参数指定的名称与容器之间的映射关系。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -d --name test1 --network localnet busybox /bin/sh -c <span class="string">"while true;do sleep 3600; done"</span> <span class="comment"># 5f37f36c</span></span><br><span class="line">$ docker run -d --name test2 --network localnet busybox /bin/sh -c <span class="string">"while true;do sleep 3600; done"</span> <span class="comment"># fff713dc</span></span><br><span class="line">$ docker <span class="built_in">exec</span> -it 5f ping test2</span><br><span class="line">PING test2 (172.18.0.3): 56 data bytes</span><br><span class="line">64 bytes from 172.18.0.3: seq=0 ttl=64 time=0.119 ms</span><br></pre></td></tr></table></figure>
+
+<p>桥接网络中的容器只能与位于相同网络中的容器进行通信。若想绕过此限制，可使用端口映射，不过这种方式会占用宿主机端口。</p>
+<p>此外，容器内数据包是如何访问外网的呢？例如连接到 docker0 的容器想要访问外网，宿主机的 eth0 可以访问外网。在 docker0 和 eth0 有一层 NAT（网络地址转换），将经由 docker0 的地址转化为经由 eth0 的地址。NAT 是由 <code>iptables</code>实现的。</p>
+<h2 id="4-多机覆盖网络"><a href="#4-多机覆盖网络" class="headerlink" title="4. 多机覆盖网络"></a>4. 多机覆盖网络</h2><h2 id="5-DNS服务发现"><a href="#5-DNS服务发现" class="headerlink" title="5. DNS服务发现"></a>5. DNS服务发现</h2><p>在 Swarm 中服务可以通过名称相互定位，其底层实现就是利用了 Docker 内置的 DNS 解析器，为每个容器提供 DNS 解析功能。以 c1 容器中 ping c2 为例：</p>
+<ul>
+<li>ping c2 会调用本地 DNS 解析器，每个 Docker 容器都有本地 DNS 解析器。</li>
+<li>若本地解析器的本地缓存没有找到 c2 对应的 IP，本地解析器会向 Docker DNS 服务器发起递归查询，本地解析器会预先配置好 Docker DNS 服务器信息的。</li>
+<li>Docker DNS 服务器记录全部容器名称与 IP 的映射关系，容器名称是在创建时通过<code>--name</code>或者<code>--net-alias</code>参数设置的。</li>
+<li>Docker DNS 服务将 c2 IP 发送 c1 本地解析器。</li>
+<li>发送 ping 命令至 c2。</li>
+</ul>
+<p>服务发现受网络限制的，<strong>DNS 解析只对位于同一网络中的容器和服务生效</strong>。如果两个容器在不同的网络，那么就不能互相解析。</p>
+<h2 id="回顾：Docker-网络基础命令"><a href="#回顾：Docker-网络基础命令" class="headerlink" title="回顾：Docker 网络基础命令"></a>回顾：Docker 网络基础命令</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>docker network ls</td>
+<td>列出运行在本地 Docker 上的全部网络</td>
+</tr>
+<tr>
+<td>docker network create</td>
+<td>创建新的Docker网络，可使用<code>-d</code>参数指定驱动</td>
+</tr>
+<tr>
+<td>docker network inspect</td>
+<td>Docker 网络详细配置信息</td>
+</tr>
+<tr>
+<td>docker network prune</td>
+<td>删除 Docker 主机上全部未使用的网络</td>
+</tr>
+<tr>
+<td>docker network rm</td>
+<td>删除 Docker 主机上指定网络</td>
+</tr>
+</tbody></table>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>深入浅出 Docker 第11章、第12章</p>
+<p><a href="https://github.com/docker/labs/tree/master/networking/concepts" target="_blank" rel="noopener">Docker Labs</a></p>
+<p><a href="https://blog.waterstrong.me/docker-networking/" target="_blank" rel="noopener">https://blog.waterstrong.me/docker-networking/</a></p>
+<p><a href="https://coding.imooc.com/class/chapter/189.html#Anchor" target="_blank" rel="noopener">https://coding.imooc.com/class/chapter/189.html#Anchor</a></p>
+<p><a href="https://www.cnblogs.com/bakari/p/10443484.html" target="_blank" rel="noopener">https://www.cnblogs.com/bakari/p/10443484.html</a></p>
+<p><a href="https://www.cnblogs.com/charlieroro/p/9897975.html" target="_blank" rel="noopener">https://www.cnblogs.com/charlieroro/p/9897975.html</a></p>
+
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/08/29/Redis-持久化/" title= "Redis-持久化">
+                    <div class="nextTitle">Redis-持久化</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/03/14/Redis-复制/" title= "Redis 复制">
+                    <div class="prevTitle">Redis 复制</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Docker-网络综述"><span class="toc-number">1.</span> <span class="toc-text">Docker 网络综述</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Docker-网络模型"><span class="toc-number">1.1.</span> <span class="toc-text">1. Docker 网络模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CNM"><span class="toc-number">1.1.1.</span> <span class="toc-text">CNM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Libnetwork"><span class="toc-number">1.1.2.</span> <span class="toc-text">Libnetwork</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#驱动"><span class="toc-number">1.1.3.</span> <span class="toc-text">驱动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Docker-网络原理基础"><span class="toc-number">1.2.</span> <span class="toc-text">2. Docker 网络原理基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux-Network-Namespace"><span class="toc-number">1.2.1.</span> <span class="toc-text">Linux Network Namespace</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-单机桥接网络"><span class="toc-number">1.3.</span> <span class="toc-text">3. 单机桥接网络</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-多机覆盖网络"><span class="toc-number">1.4.</span> <span class="toc-text">4. 多机覆盖网络</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-DNS服务发现"><span class="toc-number">1.5.</span> <span class="toc-text">5. DNS服务发现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#回顾：Docker-网络基础命令"><span class="toc-number">1.6.</span> <span class="toc-text">回顾：Docker 网络基础命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-number">1.7.</span> <span class="toc-text">Reference</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 64
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/基于Kubeadm离线安装Kubernetes/" >基于Kubeadm离线安装Kubernetes</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2021/09/14/Kubernetes相关记录/" >Kubernetes相关记录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/Docker容器实战-网络相关/" >容器实战 - 网络相关</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/19</span><a class="archive-post-title" href= "/2021/07/19/朝花夕拾-Linux-Shell-文本处理/" >朝花夕拾 - Linux Shell 文本处理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2021/07/15/Clickhouse/" >Clickhouse 概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/Linux宿主机及Docker监控/" >Linux宿主机及Docker监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/16</span><a class="archive-post-title" href= "/2021/05/16/Linux性能优化-内存篇/" >Linux性能优化-内存篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2021/03/24/Redis-集群/" >Redis-集群</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2021/03/15/Kubernetes-入门/" >Kubernetes 入门笔记</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2021/01/24/DDIA-读书整理-3-数据存储与检索/" >DDIA 读书整理- 1.可靠、可拓展与可维护的应用系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2021/01/24/DDIA-读书整理-1-可靠、可拓展与可维护的应用系统/" >DDIA 读书整理- 1.可靠、可拓展与可维护的应用系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2021/01/02/Docker-引擎结构与底层原理/" >Docker 引擎结构与底层原理</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span><a class="archive-post-title" href= "/2020/12/17/Greenplum-Spark-数据传输工具-Greenplum-Spark-Connector/" >Greenplum-Spark 数据传输工具: Greenplum-Spark Connector</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span><a class="archive-post-title" href= "/2020/12/16/Linux性能优化-网络性能篇/" >Linux性能优化-网络性能篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/Linux性能优化-CPU篇/" >Linux性能优化-CPU篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href= "/2020/11/30/Spark/" >[Untitled Post]</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span><a class="archive-post-title" href= "/2020/08/30/JVM-内存区域与垃圾收集器/" >JVM-内存区域与垃圾收集器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/Redis-持久化/" >Redis-持久化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2020/03/29/Docker-网络综述/" >Docker 网络综述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span><a class="archive-post-title" href= "/2020/03/14/Redis-复制/" >Redis 复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span><a class="archive-post-title" href= "/2020/03/05/Greenplum-要点概述/" >Greenplum 要点概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/27</span><a class="archive-post-title" href= "/2020/02/27/曼昆经济学原理-7th-Ch1-经济学十大原理/" >曼昆经济学原理(7th) CH1 经济学十大原理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span><a class="archive-post-title" href= "/2020/02/20/Apache-Calcite-Adapter-入门/" >Apache Calcite (一) - Adapter</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href= "/2020/01/06/大数据入门草稿-Hive/" >大数据入门草稿 - Hive</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span><a class="archive-post-title" href= "/2019/12/18/HikariCP-2-HikariCP-配置项/" >[HikariCP] HikariCP 配置项 </a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span><a class="archive-post-title" href= "/2019/12/16/大数据入门草稿-Hadoop/" >大数据入门草稿 - Hadoop</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span><a class="archive-post-title" href= "/2019/12/08/指标监控-2-云原生监控系统-Prometheus/" >[指标监控] 云原生监控系统 Prometheus</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/29</span><a class="archive-post-title" href= "/2019/11/29/指标监控-1-JVM-指标框架-Micrometer/" >[指标监控] JVM 指标框架 Micrometer</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2019/10/08/并发札记-8-原子操作类/" >[回顾并发基础] 原子操作类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2019/10/05/并发札记-7-JUC中的并发队列/" >[回顾并发基础] JUC中的并发队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/04</span><a class="archive-post-title" href= "/2019/10/04/HikariCP-1-高性能的秘密/" >[HikariCP] HikariCP为什么快</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/03</span><a class="archive-post-title" href= "/2019/10/03/HikariCP-0-DBPool & JDBC基础/" >[HikariCP] DBPool & JDBC基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-4-常用Lock实现类/" >[回顾并发基础] ReentrantLock & ReentrantReadWriteLock & StampedLock</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-5-常用并发工具类/" >[回顾并发基础] 常用并发工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2019/09/22/Java并发札记-6. CopyOnWriteArrayList & ConcurrentHashMap/" >[回顾并发基础] CopyOnWriteArrayList & ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span><a class="archive-post-title" href= "/2019/09/21/Java并发札记-3-Lock & AQS/" >[回顾并发基础] Lock & AQS</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2019/09/11/使用ClassLoader在SpringBoot打包文件中获取嵌套jar/" >使用自定义ClassLoader加载SpringBoot打包文件中嵌套jar驱动</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2019/09/07/JVM-类加载机制/" >JVM 类加载机制解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-2-Java并发编程基础/" >[回顾并发基础] Java并发编程基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/25</span><a class="archive-post-title" href= "/2019/08/25/Java并发札记-1-Java内存模型/" >[回顾并发基础] Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2019/08/24/Java并发札记-0-并发问题的根源/" >[回顾并发基础] 并发问题的根源</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2019/08/15/Spring-Data-Redis-实践-v2-1-7/" >Spring Data Redis 实践 (v2.1.7)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2019/08/12/Leetcode单排-二叉树的序列化与反序列化-N297/" >[Leetcode单排] 二叉树的序列化与反序列化 (N297)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2019/08/10/Leetcode单排- 树类题目集合1-N102-N107-N429-N872-N112-N113/" >[Leetcode单排] 树类题目集合1 (N102 N107 N429 N872 N112 N113)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树相关Easy题-N100-N101-N104-N110-N111-N572-N965/" >[Leetcode单排] 树相关Easy题 (N100 N101 N104 N110 N111 N572 N965)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/09</span><a class="archive-post-title" href= "/2019/08/09/Leetcode单排-树的遍历-N94-N589-N590/" >[Leetcode单排] 树的遍历 (N94 N589 N590)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-划分为k个相等的子集-N698/" >[Leetcode单排] 划分为k个相等的子集 (N698)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-01矩阵-N542/" >[Leetcode单排] 01矩阵 (N542)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-运算表达式设优先级求值-N241/" >[Leetcode单排] 运算表达式设优先级求值 (N241)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-分割回文串-N131/" >[Leetcode单排] 分割回文串 (N131)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/04</span><a class="archive-post-title" href= "/2019/08/04/Leetcode单排-复原IP地址-N93/" >[Leetcode单排] 复原IP地址 (N93)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2019/08/01/Leetcode单排-单词接龙-N127/" >[Leetcode单排] 单词接龙 (N127)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span><a class="archive-post-title" href= "/2019/07/31/Clojure-in-Action-Clojure-构件/" >Clojure in Action: Clojure 构件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Leetcode单排-单词搜索 (N79 N211)/" >[Leetcode单排] 单词搜索 (N79 N212)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Clojure-in-Action-程序结构、程序流程/" >Clojure in Action: 程序结构、程序流程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2019/07/30/Java进程CPU高负载排查/" >Java进程CPU高负载排查</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-括号生成-N22/" >[Leetcode单排] 括号生成 (N22)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2019/07/29/Leetcode单排-数独-N37/" >[Leetcode单排] 数独 (N37)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2019/07/28/Leetcode单排-N皇后-N51-N52/" >[Leetcode单排] N皇后 (N51 N52)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2019/07/27/Leetcode单排-Subsets-N78-N90/" >[Leetcode单排] Subsets (N78 N90)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2019/07/26/Leetcode单排-Letter-Combinations-of-a-Phone-Number (N17)/" >[Leetcode单排] Letter Combinations of a Phone Number(N17)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 组合系列 (N39 N40 N77 N216)/" >[Leetcode单排] 组合系列 (N39 N40 N77 N216)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Leetcode单排- 排列系列 (N46 N47 N784)/" >[Leetcode单排] 排列系列（N46 N47 N784）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2019/07/25/Clojure-in-Action-概述、数据结构/" >Clojure in Action: 概述、数据结构</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="clickhouse"><span class="iconfont-archer">&#xe606;</span>clickhouse</span>
+    
+        <span class="sidebar-tag-name" data-tags="clojure"><span class="iconfont-archer">&#xe606;</span>clojure</span>
+    
+        <span class="sidebar-tag-name" data-tags="DDIA, 数据库"><span class="iconfont-archer">&#xe606;</span>DDIA, 数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="docker"><span class="iconfont-archer">&#xe606;</span>docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DDIA"><span class="iconfont-archer">&#xe606;</span>DDIA</span>
+    
+        <span class="sidebar-tag-name" data-tags="greenplum"><span class="iconfont-archer">&#xe606;</span>greenplum</span>
+    
+        <span class="sidebar-tag-name" data-tags="connection-pool"><span class="iconfont-archer">&#xe606;</span>connection-pool</span>
+    
+        <span class="sidebar-tag-name" data-tags="db"><span class="iconfont-archer">&#xe606;</span>db</span>
+    
+        <span class="sidebar-tag-name" data-tags="spark"><span class="iconfont-archer">&#xe606;</span>spark</span>
+    
+        <span class="sidebar-tag-name" data-tags="concurrent"><span class="iconfont-archer">&#xe606;</span>concurrent</span>
+    
+        <span class="sidebar-tag-name" data-tags="jvm"><span class="iconfont-archer">&#xe606;</span>jvm</span>
+    
+        <span class="sidebar-tag-name" data-tags="backtracking"><span class="iconfont-archer">&#xe606;</span>backtracking</span>
+    
+        <span class="sidebar-tag-name" data-tags="permutations"><span class="iconfont-archer">&#xe606;</span>permutations</span>
+    
+        <span class="sidebar-tag-name" data-tags="dfs"><span class="iconfont-archer">&#xe606;</span>dfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="search"><span class="iconfont-archer">&#xe606;</span>search</span>
+    
+        <span class="sidebar-tag-name" data-tags="bfs"><span class="iconfont-archer">&#xe606;</span>bfs</span>
+    
+        <span class="sidebar-tag-name" data-tags="combination"><span class="iconfont-archer">&#xe606;</span>combination</span>
+    
+        <span class="sidebar-tag-name" data-tags="tree"><span class="iconfont-archer">&#xe606;</span>tree</span>
+    
+        <span class="sidebar-tag-name" data-tags="partition"><span class="iconfont-archer">&#xe606;</span>partition</span>
+    
+        <span class="sidebar-tag-name" data-tags="monitor"><span class="iconfont-archer">&#xe606;</span>monitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="cpu"><span class="iconfont-archer">&#xe606;</span>cpu</span>
+    
+        <span class="sidebar-tag-name" data-tags="memory"><span class="iconfont-archer">&#xe606;</span>memory</span>
+    
+        <span class="sidebar-tag-name" data-tags="redis"><span class="iconfont-archer">&#xe606;</span>redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="network"><span class="iconfont-archer">&#xe606;</span>network</span>
+    
+        <span class="sidebar-tag-name" data-tags="cache"><span class="iconfont-archer">&#xe606;</span>cache</span>
+    
+        <span class="sidebar-tag-name" data-tags="spring"><span class="iconfont-archer">&#xe606;</span>spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="micrometer"><span class="iconfont-archer">&#xe606;</span>micrometer</span>
+    
+        <span class="sidebar-tag-name" data-tags="prometheus"><span class="iconfont-archer">&#xe606;</span>prometheus</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="db"><span class="iconfont-archer">&#xe60a;</span>db</span>
+    
+        <span class="sidebar-category-name" data-categories="clojure"><span class="iconfont-archer">&#xe60a;</span>clojure</span>
+    
+        <span class="sidebar-category-name" data-categories="分布式"><span class="iconfont-archer">&#xe60a;</span>分布式</span>
+    
+        <span class="sidebar-category-name" data-categories="docker"><span class="iconfont-archer">&#xe60a;</span>docker</span>
+    
+        <span class="sidebar-category-name" data-categories="java"><span class="iconfont-archer">&#xe60a;</span>java</span>
+    
+        <span class="sidebar-category-name" data-categories="k8s"><span class="iconfont-archer">&#xe60a;</span>k8s</span>
+    
+        <span class="sidebar-category-name" data-categories="leetcode"><span class="iconfont-archer">&#xe60a;</span>leetcode</span>
+    
+        <span class="sidebar-category-name" data-categories="linux-docker-monitor"><span class="iconfont-archer">&#xe60a;</span>linux-docker-monitor</span>
+    
+        <span class="sidebar-category-name" data-categories="linux"><span class="iconfont-archer">&#xe60a;</span>linux</span>
+    
+        <span class="sidebar-category-name" data-categories="缓存"><span class="iconfont-archer">&#xe60a;</span>缓存</span>
+    
+        <span class="sidebar-category-name" data-categories="BigData"><span class="iconfont-archer">&#xe60a;</span>BigData</span>
+    
+        <span class="sidebar-category-name" data-categories="经济学"><span class="iconfont-archer">&#xe60a;</span>经济学</span>
+    
+        <span class="sidebar-category-name" data-categories="java-monitor"><span class="iconfont-archer">&#xe60a;</span>java-monitor</span>
+    
+        <span class="sidebar-category-name" data-categories="monitor"><span class="iconfont-archer">&#xe60a;</span>monitor</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Hello John"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
